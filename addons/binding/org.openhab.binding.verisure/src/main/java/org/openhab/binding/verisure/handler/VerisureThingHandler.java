@@ -300,9 +300,9 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
     }
 
     private void scheduleImmediateRefresh() {
-        Bridge brige = getBridge();
-        if (brige != null && brige.getHandler() != null) {
-            VerisureBridgeHandler vbh = (VerisureBridgeHandler) brige.getHandler();
+        Bridge bridge = getBridge();
+        if (bridge != null && bridge.getHandler() != null) {
+            VerisureBridgeHandler vbh = (VerisureBridgeHandler) bridge.getHandler();
             if (vbh != null) {
                 vbh.scheduleImmediateRefresh();
             }
