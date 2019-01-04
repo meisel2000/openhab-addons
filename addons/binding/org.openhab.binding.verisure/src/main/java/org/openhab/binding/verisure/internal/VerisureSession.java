@@ -312,9 +312,9 @@ public class VerisureSession {
         }
     }
 
-    private void notifyListeners(VerisureThingJSON cse) {
+    private void notifyListeners(VerisureThingJSON thing) {
         for (DeviceStatusListener listener : deviceStatusListeners) {
-            listener.onDeviceStateChanged(cse);
+            listener.onDeviceStateChanged(thing);
         }
     }
 
@@ -756,10 +756,12 @@ public class VerisureSession {
     }
 
     public boolean registerDeviceStatusListener(DeviceStatusListener deviceStatusListener) {
+        logger.debug("registerDeviceStatusListener for listener {}", deviceStatusListener);
         return deviceStatusListeners.add(deviceStatusListener);
     }
 
     public boolean unregisterDeviceStatusListener(DeviceStatusListener deviceStatusListener) {
+        logger.debug("unregisterDeviceStatusListener for listener {}", deviceStatusListener);
         boolean result = deviceStatusListeners.remove(deviceStatusListener);
         if (result) {
             // onUpdate();

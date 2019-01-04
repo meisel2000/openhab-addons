@@ -149,18 +149,20 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
         try {
             // We schedule in 10 sec, to avoid multiple updates
             if (refreshJob != null) {
-                logger.trace("Current remaining delay {}", refreshJob.getDelay(TimeUnit.SECONDS));
+                logger.debug("Current remaining delay {} for refresh job {}", refreshJob.getDelay(TimeUnit.SECONDS),
+                        refreshJob);
                 if (refreshJob != null && refreshJob.getDelay(TimeUnit.SECONDS) > REFRESH_DELAY) {
                     if (immediateRefreshJob == null || ((immediateRefreshJob != null)
                             && (immediateRefreshJob.getDelay(TimeUnit.SECONDS) <= 0))) {
                         if (immediateRefreshJob != null) {
-                            logger.trace("Current immediateRefreshJob delay {}",
-                                    immediateRefreshJob.getDelay(TimeUnit.SECONDS));
+                            logger.debug("Current immediateRefreshJob delay {} for immediate refresh job {}",
+                                    immediateRefreshJob.getDelay(TimeUnit.SECONDS), immediateRefreshJob);
                         }
                         // Note we are using getDelay() instead of isDone() as we want to allow Things to schedule a
                         // refresh if their status is pending. As the status update happens inside the pollingRunnable
                         // execution the isDone() will return false and would not allow the rescheduling of the task.
                         immediateRefreshJob = scheduler.schedule(pollingRunnable, REFRESH_DELAY, TimeUnit.SECONDS);
+                        logger.debug("Scheduling immediate refresh job {}", immediateRefreshJob);
                     }
                 }
             }
@@ -170,15 +172,17 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
     }
 
     private void startAutomaticRefresh() {
+        logger.debug("Start automatic refresh {}", refreshJob);
         if (refreshJob == null || (refreshJob != null && refreshJob.isCancelled())) {
-            logger.debug("Scheduling at fixed delay");
             refreshJob = scheduler.scheduleWithFixedDelay(pollingRunnable, REFRESH_DELAY, refresh.intValue(),
                     TimeUnit.SECONDS);
+            logger.debug("Scheduling at fixed delay refreshjob {}", refreshJob);
         }
     }
 
     private void stopImmediateRefresh() {
-        if (immediateRefreshJob == null || (immediateRefreshJob != null && immediateRefreshJob.isCancelled())) {
+        logger.debug("Stop immediate refresh for job {}", immediateRefreshJob);
+        if (immediateRefreshJob == null || (immediateRefreshJob != null && !immediateRefreshJob.isCancelled())) {
             if (immediateRefreshJob != null) {
                 immediateRefreshJob.cancel(true);
             }
@@ -187,7 +191,8 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
     }
 
     private void stopAutomaticRefresh() {
-        if (refreshJob == null || (refreshJob != null && refreshJob.isCancelled())) {
+        logger.debug("Stop automatic refresh for job {}", refreshJob);
+        if (refreshJob == null || (refreshJob != null && !refreshJob.isCancelled())) {
             if (refreshJob != null) {
                 refreshJob.cancel(true);
             }
@@ -202,12 +207,22 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
         stopImmediateRefresh();
         if (session != null) {
             session.dispose();
+            session = null;
         }
     }
 
     public boolean registerObjectStatusListener(DeviceStatusListener deviceStatusListener) {
         if (session != null) {
+            logger.debug("registerObjectStatusListener for listener {}", deviceStatusListener);
             return session.registerDeviceStatusListener(deviceStatusListener);
+        }
+        return false;
+    }
+
+    public boolean unregisterObjectStatusListener(DeviceStatusListener deviceStatusListener) {
+        if (session != null) {
+            logger.debug("unregisterObjectStatusListener for listener {}", deviceStatusListener);
+            return session.unregisterDeviceStatusListener(deviceStatusListener);
         }
         return false;
     }
@@ -219,8 +234,13 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
      */
     @Override
     public void handleRemoval() {
+        logger.debug("handleRemoval");
         stopAutomaticRefresh();
         stopImmediateRefresh();
+        if (session != null) {
+            session.dispose();
+            session = null;
+        }
     }
 
 }

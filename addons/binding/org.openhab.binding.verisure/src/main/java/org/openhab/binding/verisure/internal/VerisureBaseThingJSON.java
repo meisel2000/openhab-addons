@@ -224,28 +224,24 @@ public class VerisureBaseThingJSON implements VerisureThingJSON {
             builder.append(", ");
         }
         if (id != null) {
-            builder.append("id=");
+            builder.append(", id=");
             builder.append(id);
-            builder.append(", ");
         }
         if (location != null) {
-            builder.append("location=");
+            builder.append(", location=");
             builder.append(location);
-            builder.append(", ");
         }
         if (status != null) {
-            builder.append("status=");
+            builder.append(", status=");
             builder.append(status);
         }
         if (siteName != null) {
-            builder.append("siteName=");
+            builder.append(", siteName=");
             builder.append(siteName);
         }
         if (siteId != null) {
-            builder.append("siteId=");
-            if (siteId != null) {
-                builder.append(siteId.toString());
-            }
+            builder.append(", siteId=");
+            builder.append(siteId.toString());
         }
         builder.append("]");
         return builder.toString();

@@ -300,6 +300,7 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
     }
 
     private void scheduleImmediateRefresh() {
+        logger.debug("scheduleImmediateRefresh on thing: {}", thing);
         Bridge bridge = getBridge();
         if (bridge != null && bridge.getHandler() != null) {
             VerisureBridgeHandler vbh = (VerisureBridgeHandler) bridge.getHandler();
@@ -311,7 +312,7 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
 
     @Override
     public void initialize() {
-        logger.debug("initialize");
+        logger.debug("initialize on thing: {}", thing);
         // Do not go online
         Bridge bridge = getBridge();
         if (bridge != null) {
@@ -321,12 +322,23 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
 
     @Override
     public void dispose() {
-        logger.debug("dispose");
+        logger.debug("dispose on thing: {}", thing);
+        Bridge bridge = getBridge();
+        if (bridge != null) {
+            VerisureBridgeHandler vbh = (VerisureBridgeHandler) bridge.getHandler();
+            if (vbh != null) {
+                session = vbh.getSession();
+                if (session != null && this.id != null) {
+                    session.unregisterDeviceStatusListener(this);
+                    // vbh.registerObjectStatusListener(this);
+                }
+            }
+        }
     }
 
     @Override
     public void bridgeStatusChanged(ThingStatusInfo bridgeStatusInfo) {
-        logger.debug("bridgeStatusChanged");
+        logger.debug("bridgeStatusChanged bridgeStatusInfo: {}", bridgeStatusInfo);
         if (bridgeStatusInfo.getStatus() == ThingStatus.ONLINE) {
             Bridge bridge = getBridge();
             if (bridge != null) {
@@ -335,7 +347,8 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
                     session = vbh.getSession();
                     if (session != null && this.id != null) {
                         update(session.getVerisureThing(this.id));
-                        vbh.registerObjectStatusListener(this);
+                        session.registerDeviceStatusListener(this);
+                        // vbh.registerObjectStatusListener(this);
                     }
                 }
             }
@@ -669,22 +682,25 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
     }
 
     @Override
-    public void onDeviceStateChanged(@Nullable VerisureThingJSON updateObject) {
-        if (updateObject != null) {
-            String id = updateObject.getId();
+    public void onDeviceStateChanged(@Nullable VerisureThingJSON thing) {
+        logger.debug("onDeviceStateChanged on thing: {}", thing);
+        if (thing != null) {
+            String id = thing.getId();
             if (id != null) {
                 if (id.equals(this.id)) {
-                    update(updateObject);
+                    update(thing);
                 }
             }
         }
     }
 
     @Override
-    public void onDeviceRemoved(@Nullable VerisureThingJSON updateObject) {
+    public void onDeviceRemoved(@Nullable VerisureThingJSON thing) {
+        logger.debug("onDeviceRemoved on thing: {}", thing);
     }
 
     @Override
-    public void onDeviceAdded(@Nullable VerisureThingJSON updateObject) {
+    public void onDeviceAdded(@Nullable VerisureThingJSON thing) {
+        logger.debug("onDeviceAdded on thing: {}", thing);
     }
 }
