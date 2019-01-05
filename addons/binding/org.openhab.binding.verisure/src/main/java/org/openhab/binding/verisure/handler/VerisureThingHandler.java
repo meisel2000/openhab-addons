@@ -683,7 +683,7 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
 
     @Override
     public void onDeviceStateChanged(@Nullable VerisureThingJSON thing) {
-        logger.debug("onDeviceStateChanged on thing: {}", thing);
+        logger.trace("onDeviceStateChanged on thing: {}", thing);
         if (thing != null) {
             String id = thing.getId();
             if (id != null) {
@@ -696,11 +696,11 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
 
     @Override
     public void onDeviceRemoved(@Nullable VerisureThingJSON thing) {
-        logger.debug("onDeviceRemoved on thing: {}", thing);
+        logger.trace("onDeviceRemoved on thing: {}", thing);
     }
 
     @Override
     public void onDeviceAdded(@Nullable VerisureThingJSON thing) {
-        logger.debug("onDeviceAdded on thing: {}", thing);
+        logger.trace("onDeviceAdded on thing: {}", thing);
     }
 }
