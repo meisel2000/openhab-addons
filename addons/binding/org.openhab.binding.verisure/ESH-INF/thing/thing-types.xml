@@ -38,6 +38,30 @@
         </config-description>
     </bridge-type>
     
+    <thing-type id="alarm">
+        <supported-bridge-type-refs>
+            <bridge-type-ref id="bridge" />
+        </supported-bridge-type-refs>
+
+        <label>Verisure Alarm</label>
+        <description>A Verisure Alarm.</description>
+
+        <channels>
+            <channel id="status" typeId="status"/>
+            <channel id="numericStatus" typeId="numericStatus"/>
+            <channel id="alarmStatus" typeId="alarmStatus"/>
+            <channel id="timestamp" typeId="timestamp"/>
+            <channel id="changedByUser" typeId="changedByUser"/>
+            <channel id="siteName" typeId="siteName" />
+            <channel id="siteId" typeId="siteId" />
+            <channel id="setAlarmStatus" typeId="setAlarmStatus"/>
+        </channels>
+
+        <properties>
+            <property name="vendor">Verisure</property>
+        </properties>
+    </thing-type>
+        
     <thing-type id="smokeDetector">
         <supported-bridge-type-refs>
             <bridge-type-ref id="bridge" />
@@ -82,13 +106,13 @@
         </properties>
     </thing-type>
     
-    <thing-type id="nightControl">
+    <thing-type id="siren">
         <supported-bridge-type-refs>
             <bridge-type-ref id="bridge" />
         </supported-bridge-type-refs>
 
-        <label>Verisure Night Control</label>
-        <description>A climate device in a Night Control.</description>
+        <label>Verisure Siren</label>
+        <description>A climate device in a Siren.</description>
 
         <channels>
             <channel id="temperature" typeId="temperature" />
@@ -104,14 +128,13 @@
         </properties>
     </thing-type>
     
-    
-    <thing-type id="siren">
+    <thing-type id="nightControl">
         <supported-bridge-type-refs>
             <bridge-type-ref id="bridge" />
         </supported-bridge-type-refs>
 
-        <label>Verisure Siren</label>
-        <description>A climate device in a Siren.</description>
+        <label>Verisure Night Control</label>
+        <description>A climate device in a Night Control.</description>
 
         <channels>
             <channel id="temperature" typeId="temperature" />
@@ -158,23 +181,22 @@
         </properties>
     </thing-type>
     
-    <thing-type id="alarm">
+    <thing-type id="smartPlug">
         <supported-bridge-type-refs>
             <bridge-type-ref id="bridge" />
         </supported-bridge-type-refs>
 
-        <label>Verisure Alarm</label>
-        <description>A Verisure Alarm.</description>
+        <label>Verisure SmartPlug</label>
+        <description>A Verisure SmartPlug in your system.</description>
 
         <channels>
             <channel id="status" typeId="status"/>
-            <channel id="numericStatus" typeId="numericStatus"/>
-            <channel id="alarmStatus" typeId="alarmStatus"/>
-            <channel id="timestamp" typeId="timestamp"/>
-            <channel id="changedByUser" typeId="changedByUser"/>
+            <channel id="hazardous" typeId="hazardous" />
+            <channel id="smartPlugStatus" typeId="smartPlugStatus"/>
+            <channel id="location" typeId="location" />
             <channel id="siteName" typeId="siteName" />
             <channel id="siteId" typeId="siteId" />
-            <channel id="setAlarmStatus" typeId="setAlarmStatus"/>
+            <channel id="setSmartPlugStatus" typeId="setSmartPlugStatus"/>
         </channels>
 
         <properties>
@@ -243,30 +265,7 @@
             <property name="vendor">Verisure</property>
         </properties>
     </thing-type>
-    
-    <thing-type id="smartPlug">
-        <supported-bridge-type-refs>
-            <bridge-type-ref id="bridge" />
-        </supported-bridge-type-refs>
-
-        <label>Verisure SmartPlug</label>
-        <description>A Verisure SmartPlug in your system.</description>
-
-        <channels>
-            <channel id="status" typeId="status"/>
-            <channel id="location" typeId="location" />
-            <channel id="hazardous" typeId="hazardous" />
-            <channel id="smartPlugStatus" typeId="smartPlugStatus"/>
-            <channel id="setSmartPlugStatus" typeId="setSmartPlugStatus"/>
-            <channel id="siteName" typeId="siteName" />
-            <channel id="siteId" typeId="siteId" />
-        </channels>
-
-        <properties>
-            <property name="vendor">Verisure</property>
-        </properties>
-    </thing-type>
-    
+        
     <channel-type id="status">
         <item-type>String</item-type>
         <label>Current Status</label>

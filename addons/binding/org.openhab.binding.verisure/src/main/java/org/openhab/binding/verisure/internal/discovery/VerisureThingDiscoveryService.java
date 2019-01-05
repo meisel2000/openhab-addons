@@ -88,9 +88,12 @@ public class VerisureThingDiscoveryService extends AbstractDiscoveryService {
         if (thingUID != null) {
             if (verisureBridgeHandler != null) {
                 ThingUID bridgeUID = verisureBridgeHandler.getThing().getUID();
+                String label = "ID: " + value.getId();
+                if (value.getLocation() != null) {
+                    label += ", Location: " + value.getLocation();
+                }
                 DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(thingUID).withBridge(bridgeUID)
-                        .withLabel(value.getId()).build();
-
+                        .withLabel(label).build();
                 logger.debug("thinguid: {}, bridge {}, label {}", thingUID.toString(), bridgeUID, value.getId());
                 thingDiscovered(discoveryResult);
             }
