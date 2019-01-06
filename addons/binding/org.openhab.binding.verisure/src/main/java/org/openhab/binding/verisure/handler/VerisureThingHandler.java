@@ -18,6 +18,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
+import org.eclipse.smarthome.core.library.types.OpenClosedType;
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
@@ -34,7 +35,7 @@ import org.openhab.binding.verisure.internal.DeviceStatusListener;
 import org.openhab.binding.verisure.internal.VerisureAlarmJSON;
 import org.openhab.binding.verisure.internal.VerisureBroadbandConnectionJSON;
 import org.openhab.binding.verisure.internal.VerisureClimateBaseJSON;
-import org.openhab.binding.verisure.internal.VerisureDoorWindowsJSON;
+import org.openhab.binding.verisure.internal.VerisureDoorWindowJSON;
 import org.openhab.binding.verisure.internal.VerisureSession;
 import org.openhab.binding.verisure.internal.VerisureSmartLockJSON;
 import org.openhab.binding.verisure.internal.VerisureSmartLockJSON.DoorLockVolumeSettings;
@@ -390,7 +391,7 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
                 updateSmartLockState(obj);
             }
         } else if (getThing().getThingTypeUID().equals(THING_TYPE_DOORWINDOW)) {
-            VerisureDoorWindowsJSON obj = (VerisureDoorWindowsJSON) thing;
+            VerisureDoorWindowJSON obj = (VerisureDoorWindowJSON) thing;
             if (obj != null) {
                 updateDoorWindowState(obj);
             }
@@ -579,9 +580,13 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
 
     }
 
-    private void updateDoorWindowState(VerisureDoorWindowsJSON status) {
+    private void updateDoorWindowState(VerisureDoorWindowJSON status) {
         ChannelUID cuid = new ChannelUID(getThing().getUID(), CHANNEL_STATE);
-        updateState(cuid, new StringType(status.getState()));
+        if (status.getState().equals("OPEN")) {
+            updateState(cuid, OpenClosedType.OPEN);
+        } else {
+            updateState(cuid, OpenClosedType.CLOSED);
+        }
 
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_LOCATION);
         updateState(cuid, new StringType(status.getArea()));

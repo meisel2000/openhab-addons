@@ -188,7 +188,7 @@ public class VerisureSession {
                     if (vInst != null) {
                         updateVerisureThings(ALARMSTATUS_PATH, VerisureAlarmJSON[].class, vInst);
                         updateVerisureThings(CLIMATEDEVICE_PATH, VerisureClimateBaseJSON[].class, vInst);
-                        updateVerisureThings(DOORWINDOW_PATH, VerisureDoorWindowsJSON[].class, vInst);
+                        updateVerisureThings(DOORWINDOW_PATH, VerisureDoorWindowJSON[].class, vInst);
                         updateVerisureThings(USERTRACKING_PATH, VerisureUserPresenceJSON[].class, vInst);
                         updateVerisureThings(SMARTPLUG_PATH, VerisureSmartPlugJSON[].class, vInst);
                         updateVerisureBroadbandStatus(ETHERNETSTATUS_PATH, VerisureBroadbandConnectionJSON.class,

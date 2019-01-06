@@ -20,7 +20,7 @@ import com.google.gson.annotations.SerializedName;
  *
  */
 @NonNullByDefault
-public class VerisureDoorWindowsJSON extends VerisureBaseThingJSON {
+public class VerisureDoorWindowJSON extends VerisureBaseThingJSON {
 
     @SerializedName("area")
     private @Nullable String area;
@@ -31,7 +31,7 @@ public class VerisureDoorWindowsJSON extends VerisureBaseThingJSON {
     @SerializedName("deviceLabel")
     private @Nullable String deviceLabel;
 
-    public VerisureDoorWindowsJSON(String id, String state, String location) {
+    public VerisureDoorWindowJSON(String id, String state, String location) {
         super();
         this.area = location;
         this.state = state;
@@ -107,11 +107,11 @@ public class VerisureDoorWindowsJSON extends VerisureBaseThingJSON {
         if (!super.equals(obj)) {
             return false;
         }
-        if (!(obj instanceof VerisureDoorWindowsJSON)) {
+        if (!(obj instanceof VerisureDoorWindowJSON)) {
             return false;
         }
 
-        VerisureDoorWindowsJSON other = (VerisureDoorWindowsJSON) obj;
+        VerisureDoorWindowJSON other = (VerisureDoorWindowJSON) obj;
         if (area == null) {
             if (other.area != null) {
                 return false;
@@ -139,7 +139,7 @@ public class VerisureDoorWindowsJSON extends VerisureBaseThingJSON {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("VerisureDoorWindowsJSON [");
+        builder.append("VerisureDoorWindowJSON [");
         if (area != null) {
             builder.append("area=");
             builder.append(area);

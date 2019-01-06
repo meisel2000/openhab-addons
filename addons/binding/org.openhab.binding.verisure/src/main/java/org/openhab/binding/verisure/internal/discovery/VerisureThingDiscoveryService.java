@@ -26,7 +26,7 @@ import org.openhab.binding.verisure.handler.VerisureThingHandler;
 import org.openhab.binding.verisure.internal.VerisureAlarmJSON;
 import org.openhab.binding.verisure.internal.VerisureBroadbandConnectionJSON;
 import org.openhab.binding.verisure.internal.VerisureClimateBaseJSON;
-import org.openhab.binding.verisure.internal.VerisureDoorWindowsJSON;
+import org.openhab.binding.verisure.internal.VerisureDoorWindowJSON;
 import org.openhab.binding.verisure.internal.VerisureSession;
 import org.openhab.binding.verisure.internal.VerisureSmartPlugJSON;
 import org.openhab.binding.verisure.internal.VerisureThingJSON;
@@ -133,7 +133,7 @@ public class VerisureThingDiscoveryService extends AbstractDiscoveryService {
                 if (id != null) {
                     thingUID = new ThingUID(THING_TYPE_USERPRESENCE, bridgeUID, id.replaceAll("[^a-zA-Z0-9_]", "_"));
                 }
-            } else if (voj instanceof VerisureDoorWindowsJSON) {
+            } else if (voj instanceof VerisureDoorWindowJSON) {
                 String id = voj.getId();
                 if (id != null) {
                     thingUID = new ThingUID(THING_TYPE_DOORWINDOW, bridgeUID, id.replaceAll("[^a-zA-Z0-9_]", "_"));

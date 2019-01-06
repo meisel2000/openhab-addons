@@ -371,14 +371,10 @@
     </channel-type>
     
     <channel-type id="state">
-        <item-type>String</item-type>
+        <item-type>Contact</item-type>
         <label>State of Door or Window</label>
-        <description>Is door/window opened or closed.</description>
-        <state readOnly="true" >
-            <options>
-                <option value="OPEN">OPEN</option>
-                <option value="CLOSED">CLOSED</option>                
-            </options>
+        <description>Is door/window opened or closed. (OPEN/CLOSED)</description>
+        <state readOnly="true">
         </state>
     </channel-type>
     
