@@ -270,48 +270,56 @@
         <item-type>String</item-type>
         <label>Current Status</label>
         <description>Information on current status.</description>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="webAccount">
         <item-type>String</item-type>
         <label>User Email</label>
         <description>The User's Email address.</description>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="userLocationStatus">
         <item-type>String</item-type>
         <label>User Location Status</label>
         <description>Information on user location status.</description>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="userLocationName">
         <item-type>String</item-type>
         <label>User Location Name</label>
         <description>Information on user location name.</description>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="numericStatus">
         <item-type>Number</item-type>
         <label>Current Numeric Status</label>
         <description>Information about current numeric status.</description>
+        <state readOnly="true" pattern="%d" />
     </channel-type>
     
     <channel-type id="alarmStatus">
         <item-type>String</item-type>
         <label>Current Alarm Status</label>
         <description>Information about current alarm status.</description>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="timestamp">
         <item-type>String</item-type>
         <label>Time Stamp</label>
         <description>Latest timestamp.</description>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="changedByUser">
         <item-type>String</item-type>
         <label>Operated By</label>
         <description>User who did the last change.</description>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="setAlarmStatus">
@@ -374,8 +382,7 @@
         <item-type>Contact</item-type>
         <label>State of Door or Window</label>
         <description>Is door/window opened or closed. (OPEN/CLOSED)</description>
-        <state readOnly="true">
-        </state>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="temperature">
@@ -383,8 +390,7 @@
         <label>Temperature</label>
         <description>Current temperature in Celsius degrees</description>
         <category>Temperature</category>
-        <state readOnly="true" pattern="%.1f °C">
-        </state>
+        <state readOnly="true" pattern="%.1f °C" />
     </channel-type>
     
     <channel-type id="humidity">
@@ -392,108 +398,98 @@
         <label>Humidity</label>
         <description>Current humidity in %.</description>
         <category>Humidity</category>
-        <state readOnly="true" min="0" max="100" pattern="%d %%">
-        </state>
+        <state readOnly="true" min="0" max="100" pattern="%d %%" />
     </channel-type>
     
     <channel-type id="lastUpdate">
         <item-type>String</item-type>
         <label>Last Updated</label>
         <description>Last updated at this time.</description>
-        <state readOnly="true">
-        </state>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="label">
         <item-type>String</item-type>
         <label>Label</label>
         <description>The name of the door/window.</description>
-        <state readOnly="true">
-        </state>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="alarmStatus">
         <item-type>String</item-type>
         <label>Alarm Status</label>
         <description>The status of the alarm.</description>
-        <state readOnly="true">
-        </state>
+       <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="smartLockStatus">
         <item-type>String</item-type>
         <label>SmartLock Status</label>
         <description>The status of the smart lock.</description>
-        <state readOnly="true">
-        </state>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="location">
         <item-type>String</item-type>
         <label>Location</label>
         <description>The location of the device.</description>
-        <state readOnly="true">
-        </state>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="hasWifi">
         <item-type>String</item-type>
         <label>Wifi Connection</label>
         <description>Is Verisure connected via wifi.</description>
-        <state readOnly="true">
-        </state>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="hazardous">
         <item-type>String</item-type>
         <label>Hazardous</label>
         <description>Is Verisure smart plug configured as hazardous.</description>
-        <state readOnly="true">
-        </state>
+       <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="smartPlugStatus">
         <item-type>String</item-type>
         <label>SmartPlug Status</label>
         <description>Is Verisure smart plug On or Off.</description>
-        <state readOnly="true">
-        </state>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="siteName">
         <item-type>String</item-type>
         <label>Installation Site Name</label>
         <description>Name of the installation site.</description>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="siteId">
         <item-type>Number</item-type>
         <label>Installation Site Id</label>
         <description>ID of the installation site.</description>
+        <state readOnly="true" pattern="%d" />
     </channel-type>
     
     <channel-type id="autoRelockEnabled">
         <item-type>String</item-type>
         <label>Auto Re-Lock Enabled</label>
         <description>Is automatic re-lock enabled.</description>
-        <state readOnly="true">
-        </state>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="smartLockVolume">
         <item-type>String</item-type>
         <label>SmartLock Volume Setting</label>
         <description>Verisure smart lock volume setting.</description>
-        <state readOnly="true">
-        </state>
+       <state readOnly="true" pattern="%s" />
     </channel-type>
     
     <channel-type id="smartLockVoiceLevel">
         <item-type>String</item-type>
         <label>SmartLock Voice Level Setting</label>
         <description>Verisure smart lock voice level setting.</description>
-        <state readOnly="true">
-        </state>
+        <state readOnly="true" pattern="%s" />
     </channel-type>
     
     
