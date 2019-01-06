@@ -1,4 +1,4 @@
-##Verisure Binding##
+# Verisure Binding
 
 This is an OpenHAB binding for Versiure Alarm system, by Securitas Direct
 
@@ -8,33 +8,37 @@ The binding supports several installations via the configuration parameter numbe
 
 Be aware that Verisure don't approve if you update to often, I have gotten no complaints running with a 10 minutes update interval, but officially you should use 30 minutes.
 
-###Supported Things###
+## Supported Things
 
 This binding supports the following thing types:
 
-* Bridge
-* Alarm
-* Smoke Detector (climate) 
-* Water Detector (climate)
-* Siren (climate)
-* Night Control
-* Yaleman SmartLock
-* SmartPlug
-* Door/Window Status
-* User Presence Status
-* Broadband Connection Status
+- Bridge
+- Alarm
+- Smoke Detector (climate) 
+- Water Detector (climate)
+- Siren (climate)
+- Night Control
+- Yaleman SmartLock
+- SmartPlug
+- Door/Window Status
+- User Presence Status
+- Broadband Connection Status
 
 
-###Binding Configuration###
+## Binding Configuration
+
 You will have to configure the bridge with username and password, these must be the same values as used when logging into https://mypages.verisure.com. You can also configure your pin-code to be able to lock/unlock the SmartLock and arm/unarm the alarm. It is also possible to configure the number of installations you have, default is 1.
 
-###Discovery###
+## Discovery
+
 After the configuration of the Verisure Bridge all of the available Sensors, Alarms, SmartPlugs and SmartLocks will be discovered and placed as things in the inbox.
 
-###Thing Configuration###
+## Thing Configuration
+
 Only the bridge require manual configuration. The devices and sensors should not be added by hand, let the discovery/inbox initially configure these.
 
-###Supported Things and Channels###
+## Supported Things and Channels 
+
 Verisure Alarm ([alarm]) support the following channels:
 
 <table>
@@ -168,6 +172,3 @@ Verisure Broadband Connection ([broadbandConnection]) support the following chan
 
 ###Full Example###
 
-```
-Bridge verisure:bridge:1 "My Versirue" [pin="YYYYYY", username="XXXXXXX",password="ZZZZZZ"]
-```
