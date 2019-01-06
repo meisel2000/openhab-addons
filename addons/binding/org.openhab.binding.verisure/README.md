@@ -172,7 +172,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 
 ## Example
 
-### Item-file
+### Items-file
 ````// SmartLock and Alarm
 Switch   SmartLock                     "Verisure SmartLock"  <lock>   [ "Switchable" ]  {channel="verisure:smartLock:c15874f2:B2XX_YYST:setSmartLockStatus"}
 Number   AlarmHome                     "Alarm Home"          <alarm>                    {channel="verisure:alarm:c15874f2:alarm_2:setAlarmStatus"}
@@ -205,6 +205,7 @@ String UserLocationEmailGlava          "User Location Email Glava"     {channel=
 String UserLocationStatusGlava         "User Location Status Glava"    {channel="verisure:userPresence:c15874f2:userpresence_1:userLocationStatus"}
 String UserLocationNameGlava           "User Location Name Glava"      {channel="verisure:userPresence:c15874f2:userpresence_1:userLocationName"}
 ```
+
 ### Sitemap
 ````
     Frame label="SmartLock and Alarm" {
