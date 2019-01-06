@@ -275,19 +275,19 @@
     <channel-type id="webAccount">
         <item-type>String</item-type>
         <label>User Email</label>
-        <description>The Users Email Address.</description>
+        <description>The User's Email address.</description>
     </channel-type>
     
     <channel-type id="userLocationStatus">
         <item-type>String</item-type>
         <label>User Location Status</label>
-        <description>Information on User Location Status.</description>
+        <description>Information on user location status.</description>
     </channel-type>
     
     <channel-type id="userLocationName">
         <item-type>String</item-type>
         <label>User Location Name</label>
-        <description>Information on User Location Name.</description>
+        <description>Information on user location name.</description>
     </channel-type>
     
     <channel-type id="numericStatus">
@@ -311,13 +311,13 @@
     <channel-type id="changedByUser">
         <item-type>String</item-type>
         <label>Operated By</label>
-        <description>Person who id the last change.</description>
+        <description>User who did the last change.</description>
     </channel-type>
     
     <channel-type id="setAlarmStatus">
         <item-type>Number</item-type>
         <label>Change Alarm Status</label>
-        <description>Method to change Alarm status.</description>
+        <description>Method to change alarm status.</description>
         <state>
             <options>
                 <option value="0">0</option>
@@ -330,19 +330,19 @@
     <channel-type id="setSmartLockStatus">
         <item-type>Switch</item-type>
         <label>Change SmartLock Status</label>
-        <description>Method to change SmartLock status.</description>
+        <description>Method to change smart lock status.</description>
     </channel-type>
     
     <channel-type id="setAutoRelock">
         <item-type>Switch</item-type>
         <label>Change SmartLock Auto Re-lock setting</label>
-        <description>Method to change SmartLock auto re-lock setting.</description>
+        <description>Method to change smart lock auto re-lock setting.</description>
     </channel-type>
     
     <channel-type id="setSmartLockVolume">
         <item-type>String</item-type>
         <label>Change SmartLock Volume Setting</label>
-        <description>Method to change SmartLock volume setting.</description>
+        <description>Method to change smart lock volume setting.</description>
         <state>
             <options>
                 <option value="SILENCE">SILENCE</option>
@@ -355,7 +355,7 @@
     <channel-type id="setSmartLockVoiceLevel">
         <item-type>String</item-type>
         <label>Change SmartLock Voice Level Setting</label>
-        <description>Method to change SmartLock voice level setting.</description>
+        <description>Method to change smart lock voice level setting.</description>
         <state>
             <options>
                 <option value="ESSENTIAL">ESSENTIAL</option>
@@ -367,13 +367,13 @@
     <channel-type id="setSmartPlugStatus">
         <item-type>Switch</item-type>
         <label>Change SmartPlug Status</label>
-        <description>Method to change SmartPlug status.</description>
+        <description>Method to change smart plug status.</description>
     </channel-type>
     
     <channel-type id="state">
         <item-type>String</item-type>
         <label>State of Door or Window</label>
-        <description>Is Door/Window opened or closed.</description>
+        <description>Is door/window opened or closed.</description>
         <state readOnly="true" >
             <options>
                 <option value="OPEN">OPEN</option>
@@ -419,7 +419,7 @@
     <channel-type id="alarmStatus">
         <item-type>String</item-type>
         <label>Alarm Status</label>
-        <description>The status of the Alarm.</description>
+        <description>The status of the alarm.</description>
         <state readOnly="true">
         </state>
     </channel-type>
@@ -427,7 +427,7 @@
     <channel-type id="smartLockStatus">
         <item-type>String</item-type>
         <label>SmartLock Status</label>
-        <description>The status of the SmartLock.</description>
+        <description>The status of the smart lock.</description>
         <state readOnly="true">
         </state>
     </channel-type>
@@ -443,7 +443,7 @@
     <channel-type id="hasWifi">
         <item-type>String</item-type>
         <label>Wifi Connection</label>
-        <description>Is Verisure connected via Wifi.</description>
+        <description>Is Verisure connected via wifi.</description>
         <state readOnly="true">
         </state>
     </channel-type>
@@ -451,7 +451,7 @@
     <channel-type id="hazardous">
         <item-type>String</item-type>
         <label>Hazardous</label>
-        <description>Is Verisure SmartPlug configured as hazardous.</description>
+        <description>Is Verisure smart plug configured as hazardous.</description>
         <state readOnly="true">
         </state>
     </channel-type>
@@ -459,7 +459,7 @@
     <channel-type id="smartPlugStatus">
         <item-type>String</item-type>
         <label>SmartPlug Status</label>
-        <description>Is Verisure SmartPlug On or Off.</description>
+        <description>Is Verisure smart plug On or Off.</description>
         <state readOnly="true">
         </state>
     </channel-type>
@@ -487,7 +487,7 @@
     <channel-type id="smartLockVolume">
         <item-type>String</item-type>
         <label>SmartLock Volume Setting</label>
-        <description>Verisure SmartLock volume setting.</description>
+        <description>Verisure smart lock volume setting.</description>
         <state readOnly="true">
         </state>
     </channel-type>
@@ -495,7 +495,7 @@
     <channel-type id="smartLockVoiceLevel">
         <item-type>String</item-type>
         <label>SmartLock Voice Level Setting</label>
-        <description>Verisure SmartLock voice level setting.</description>
+        <description>Verisure smart lock voice level setting.</description>
         <state readOnly="true">
         </state>
     </channel-type>
