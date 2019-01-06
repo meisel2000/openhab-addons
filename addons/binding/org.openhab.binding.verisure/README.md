@@ -39,7 +39,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 
 ## Supported Things and Channels 
 
-**Verisure Alarm** ([alarm]) support the following channels:
+**Verisure Alarm** ([alarm]) supports the following channels:
 
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -53,7 +53,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 <tr><td>setAlarmStatus</td><td>Number</td><td>This channel is used to arm/disarm the alarm.</td></tr>
 </table>
 
-**Verisure Smoke Detector** ([smokeDetector]) support the following channels:
+**Verisure Smoke Detector** ([smokeDetector]) supports the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -66,7 +66,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 </table>
 
 
-**Verisure Water Detector** ([waterDetector]) support the following channels:
+**Verisure Water Detector** ([waterDetector]) supports the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -78,7 +78,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 <tr><td>siteId</td><td>Number</td><td>This channel reports the site ID of the site.</td></tr>
 </table>
 
-**Verisure Siren** ([siren]) support the following channels:
+**Verisure Siren** ([siren]) supports the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -90,7 +90,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 <tr><td>siteId</td><td>Number</td><td>This channel reports the site ID of the site.</td></tr>
 </table>
 
-**Verisure Night Control** ([nightControl]) support the following channels:
+**Verisure Night Control** ([nightControl]) supports the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -103,7 +103,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 </table>
 
 
-**Verisure Yaleman SmartLock** ([smartLock]) support the following channels:
+**Verisure Yaleman SmartLock** ([smartLock]) supports the following channels:
 
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -124,7 +124,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 <tr><td>setSmartLockVoiceLevel</td><td>Number</td><td>This channel is used to set the voice level.</td></tr>
 </table>
 
-**Verisure SmartPlug** ([smartPlug]) support the following channels:
+**Verisure SmartPlug** ([smartPlug]) supports the following channels:
 
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -137,7 +137,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 <tr><td>setSmartPlugStatus</td><td>Number</td><td>This channel is used to turn smart plug on/off.</td></tr>
 </table>
 
-**Verisure DoorWindow Sensor** ([doorWindowSensor]) support the following channels:
+**Verisure DoorWindow Sensor** ([doorWindowSensor]) supports the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -147,7 +147,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 <tr><td>siteId</td><td>Number</td><td>This channel reports the site ID of the site.</td></tr>
 </table>
 
-**Verisure User Presence** ([userPresence]) support the following channels:
+**Verisure User Presence** ([userPresence]) supports the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -158,7 +158,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 <tr><td>siteId</td><td>Number</td><td>This channel reports the site ID of the site.</td></tr>
 </table>
 
-**Verisure Broadband Connection** ([broadbandConnection]) support the following channels:
+**Verisure Broadband Connection** ([broadbandConnection]) supports the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
