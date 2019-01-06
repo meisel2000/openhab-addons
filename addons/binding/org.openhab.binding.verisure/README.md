@@ -141,7 +141,7 @@ Only the bridge require manual configuration. The devices and sensors should not
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
-<tr><td>state</td><td>String</td><td>This channel reports the if the door/window is open or closed (OPEN/CLOSE).</td></tr>
+<tr><td>state</td><td>Contact</td><td>This channel reports the if the door/window is open or closed (OPEN/CLOSED).</td></tr>
 <tr><td>location</td><td>String</td><td>This channel reports the location.</td></tr>
 <tr><td>siteName</td><td>String</td><td>This channel reports the name of the site.</td></tr>
 <tr><td>siteId</td><td>Number</td><td>This channel reports the site ID of the site.</td></tr>
