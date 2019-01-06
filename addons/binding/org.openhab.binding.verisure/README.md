@@ -1,10 +1,10 @@
 # Verisure Binding
 
-This is an OpenHAB binding for Versiure Alarm system, by Securitas Direct
+This is an OpenHAB binding for Versiure Alarm system, by Securitas Direct.
 
-This binding uses the rest API behind the myverisure pages https://mypages.verisure.com/login.html
+This binding uses the rest API behind the myverisure pages https://mypages.verisure.com/login.html.
 
-The binding supports several installations via the configuration parameter numberOfInstallations that defaults to 1.
+The binding supports several installation sites via the configuration parameter numberOfInstallations that defaults to 1.
 
 Be aware that Verisure don't approve if you update to often, I have gotten no complaints running with a 10 minutes update interval, but officially you should use 30 minutes.
 
@@ -39,7 +39,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 
 ## Supported Things and Channels 
 
-Verisure Alarm ([alarm]) support the following channels:
+**Verisure Alarm** ([alarm]) support the following channels:
 
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -53,7 +53,7 @@ Verisure Alarm ([alarm]) support the following channels:
 <tr><td>setAlarmStatus</td><td>Number</td><td>This channel is used to arm/disarm the alarm.</td></tr>
 </table>
 
-Verisure Smoke Detector ([smokeDetector]) support the following channels:
+**Verisure Smoke Detector** ([smokeDetector]) support the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -66,7 +66,7 @@ Verisure Smoke Detector ([smokeDetector]) support the following channels:
 </table>
 
 
-Verisure Water Detector ([waterDetector]) support the following channels:
+**Verisure Water Detector** ([waterDetector]) support the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -78,7 +78,7 @@ Verisure Water Detector ([waterDetector]) support the following channels:
 <tr><td>siteId</td><td>Number</td><td>This channel reports the site ID of the site.</td></tr>
 </table>
 
-Verisure Siren ([siren]) support the following channels:
+**Verisure Siren** ([siren]) support the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -90,7 +90,7 @@ Verisure Siren ([siren]) support the following channels:
 <tr><td>siteId</td><td>Number</td><td>This channel reports the site ID of the site.</td></tr>
 </table>
 
-Verisure Night Control ([nightControl]) support the following channels:
+**Verisure Night Control** ([nightControl]) support the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -103,7 +103,7 @@ Verisure Night Control ([nightControl]) support the following channels:
 </table>
 
 
-Verisure Yaleman SmartLock ([smartLock]) support the following channels:
+**Verisure Yaleman SmartLock** ([smartLock]) support the following channels:
 
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -124,7 +124,7 @@ Verisure Yaleman SmartLock ([smartLock]) support the following channels:
 <tr><td>setSmartLockVoiceLevel</td><td>Number</td><td>This channel is used to set the voice level.</td></tr>
 </table>
 
-Verisure SmartPlug ([smartPlug]) support the following channels:
+**Verisure SmartPlug** ([smartPlug]) support the following channels:
 
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -137,7 +137,7 @@ Verisure SmartPlug ([smartPlug]) support the following channels:
 <tr><td>setSmartPlugStatus</td><td>Number</td><td>This channel is used to turn smart plug on/off.</td></tr>
 </table>
 
-Verisure DoorWindow Sensor ([doorWindowSensor]) support the following channels:
+**Verisure DoorWindow Sensor** ([doorWindowSensor]) support the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -147,7 +147,7 @@ Verisure DoorWindow Sensor ([doorWindowSensor]) support the following channels:
 <tr><td>siteId</td><td>Number</td><td>This channel reports the site ID of the site.</td></tr>
 </table>
 
-Verisure User Presence ([userPresence]) support the following channels:
+**Verisure User Presence** ([userPresence]) support the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -158,7 +158,7 @@ Verisure User Presence ([userPresence]) support the following channels:
 <tr><td>siteId</td><td>Number</td><td>This channel reports the site ID of the site.</td></tr>
 </table>
 
-Verisure Broadband Connection ([broadbandConnection]) support the following channels:
+**Verisure Broadband Connection** ([broadbandConnection]) support the following channels:
  
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
@@ -170,5 +170,74 @@ Verisure Broadband Connection ([broadbandConnection]) support the following chan
 </table>
 
 
-###Full Example###
+## Example
 
+### Item-file
+````// SmartLock and Alarm
+Switch   SmartLock                     "Verisure SmartLock"  <lock>   [ "Switchable" ]  {channel="verisure:smartLock:c15874f2:B2XX_YYST:setSmartLockStatus"}
+Number   AlarmHome                     "Alarm Home"          <alarm>                    {channel="verisure:alarm:c15874f2:alarm_2:setAlarmStatus"}
+Switch   AlarmHomeVirtual              "Verisure Alarm"      <alarm>  [ "Switchable" ] 
+String   AlarmStatus                   "Verisure Alarm Status"                          {channel="verisure:alarm:c15874f2:alarm_2:status"}
+Number   AlarmNumericStatus            "Verisure Alarm Numeric Status"                  {channel="verisure:alarm:c15874f2:alarm_2:numericStatus"}
+String   AlarmAlarmStatus              "Verisure Alarm Status"                          {channel="verisure:alarm:c15874f2:alarm_2:alarmStatus"}
+String   AlarmTimeStamp                "Verisure Alarm Time Stamp"                      {channel="verisure:alarm:c15874f2:alarm_2:timestamp"}
+String   AlarmChangedByUser            "Verisure Alarm Changed By User"                 {channel="verisure:alarm:c15874f2:alarm_2:changedByUser"}
+Switch   AutoLock                      "AutoLock"            <lock>   [ "Switchable" ]  {channel="verisure:smartLock:c15874f2:B2XX_YYST:setAutoRelock"}
+String   SmartLockStatus               "SmartLock Status"                               {channel="verisure:smartLock:c15874f2:B2XX_YYST:smartLockStatus"}
+String   SmartLockCurrentStatus        "SmartLock Current Status"                       {channel="verisure:smartLock:c15874f2:B2XX_YYST:status"}
+Number   SmartLockNumericStatus        "SmartLock Numeric Status"                       {channel="verisure:smartLock:c15874f2:B2XX_YYST:numericStatus"}
+String   SmartLockVolume               "SmartLock Volym"     <lock>                     {channel="verisure:smartLock:c15874f2:B2XX_YYST:setSmartLockVolume"}
+String   SmartLockVolumes              "SmartLock Volumes"                              {channel="verisure:smartLock:c15874f2:B2XX_YYST:smartLockVolume"}
+String   AlarmHomeInstallationName     "Alarm Home Installation Name"                   {channel="verisure:alarm:c15874f2:alarm_2:siteName"}    
+
+// SmartPlugs         
+Switch   SmartPlugLamp                 "SmartPlug"               <lock>   [ "Switchable" ]  {channel="verisure:smartPlug:c15874f2:A2XY_FGXY:setSmartPlugStatus"}
+Switch   SmartPlugGlavaRouter          "SmartPlug Glava Router"  <lock>   [ "Switchable" ]  {channel="verisure:smartPlug:c15874f2:XYZX_ABCD:setSmartPlugStatus"}
+// DoorWindow
+String DoorWindowLocation              "Door Window Location"    {channel="verisure:doorWindowSensor:c15874f2:1SG5_GHGT:location"}
+String DoorWindowStatus                "Door Window Status"      {channel="verisure:doorWindowSensor:c15874f2:1SG5_GHGT:state"}
+// UserLocation
+String UserLocationEmail               "User Location Email"     {channel="verisure:userPresence:c15874f2:userpresence_2:webAccount"}
+String UserLocationStatus              "User Location Status"    {channel="verisure:userPresence:c15874f2:userpresence_2:userLocationStatus"}
+String UserLocationName                "User Location Name"      {channel="verisure:userPresence:c15874f2:userpresence_2:userLocationName"}
+
+String UserLocationEmailGlava          "User Location Email Glava"     {channel="verisure:userPresence:c15874f2:userpresence_1:webAccount"}
+String UserLocationStatusGlava         "User Location Status Glava"    {channel="verisure:userPresence:c15874f2:userpresence_1:userLocationStatus"}
+String UserLocationNameGlava           "User Location Name Glava"      {channel="verisure:userPresence:c15874f2:userpresence_1:userLocationName"}
+```
+### Sitemap
+````
+    Frame label="SmartLock and Alarm" {
+        Text label="SmartLock and Alarm" icon="groundfloor" {
+            Frame label="Yale Doorman SmartLock" {
+                Switch item=SmartLock label="Yale Doorman SmartLock" icon="lock.png"
+            }
+            Frame label="Verisure Alarm" {
+                Switch  item=AlarmHome  icon="alarm" label="Verisure Alarm"  mappings=[0="Disarm", 1="Arm Home", 2="Arm Away"]
+            }
+            Frame label="Yale Doorman SmartLock AutoLock" {
+                Switch item=AutoLock label="Yale Doorman SmartLock AutoLock" icon="lock.png"
+            }
+            Frame label="Yale Doorman SmartLock Volume"  {
+                Switch  item=SmartLockVolume  icon="lock" label="Yale Doorman SmartLock Volume"  mappings=["SILENCE"="Silence", "LOW"="Low", "HIGH"="High"]
+            }
+            Text item=AlarmStatus
+            Text item=AlarmNumericStatus
+            Text item=AlarmAlarmStatus
+            Text item=AlarmHomeInstallationName
+            Text item=AlarmChangedByUser
+            Text item=AlarmTimeStamp
+            Text item=SmartLockStatus
+            Text item=SmartLockCurrentStatus
+            Text item=SmartLockNumericStatus
+        }
+    }
+
+    Frame label="SmartPlugs" {
+        Text label="SmartPlugs" icon="attic" {
+            Frame label="SmartPlug Lamp" {
+                Switch item=SmartPlugLamp label="Verisure SmartPlug Lamp" icon="smartheater.png"
+            }
+        }
+    }
+```
