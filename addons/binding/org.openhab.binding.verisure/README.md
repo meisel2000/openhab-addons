@@ -173,7 +173,8 @@ Only the bridge require manual configuration. The devices and sensors should not
 ## Example
 
 ### Items-file
-````// SmartLock and Alarm
+````
+// SmartLock and Alarm
 Switch   SmartLock                     "Verisure SmartLock"  <lock>   [ "Switchable" ]  {channel="verisure:smartLock:c15874f2:B2XX_YYST:setSmartLockStatus"}
 Number   AlarmHome                     "Alarm Home"          <alarm>                    {channel="verisure:alarm:c15874f2:alarm_2:setAlarmStatus"}
 Switch   AlarmHomeVirtual              "Verisure Alarm"      <alarm>  [ "Switchable" ] 
@@ -193,18 +194,19 @@ String   AlarmHomeInstallationName     "Alarm Home Installation Name"           
 // SmartPlugs         
 Switch   SmartPlugLamp                 "SmartPlug"               <lock>   [ "Switchable" ]  {channel="verisure:smartPlug:c15874f2:A2XY_FGXY:setSmartPlugStatus"}
 Switch   SmartPlugGlavaRouter          "SmartPlug Glava Router"  <lock>   [ "Switchable" ]  {channel="verisure:smartPlug:c15874f2:XYZX_ABCD:setSmartPlugStatus"}
+
 // DoorWindow
 String DoorWindowLocation              "Door Window Location"    {channel="verisure:doorWindowSensor:c15874f2:1SG5_GHGT:location"}
 String DoorWindowStatus                "Door Window Status"      {channel="verisure:doorWindowSensor:c15874f2:1SG5_GHGT:state"}
+
 // UserLocation
 String UserLocationEmail               "User Location Email"     {channel="verisure:userPresence:c15874f2:userpresence_2:webAccount"}
 String UserLocationStatus              "User Location Status"    {channel="verisure:userPresence:c15874f2:userpresence_2:userLocationStatus"}
 String UserLocationName                "User Location Name"      {channel="verisure:userPresence:c15874f2:userpresence_2:userLocationName"}
-
 String UserLocationEmailGlava          "User Location Email Glava"     {channel="verisure:userPresence:c15874f2:userpresence_1:webAccount"}
 String UserLocationStatusGlava         "User Location Status Glava"    {channel="verisure:userPresence:c15874f2:userpresence_1:userLocationStatus"}
 String UserLocationNameGlava           "User Location Name Glava"      {channel="verisure:userPresence:c15874f2:userpresence_1:userLocationName"}
-```
+````
 
 ### Sitemap
 ````
@@ -241,4 +243,4 @@ String UserLocationNameGlava           "User Location Name Glava"      {channel=
             }
         }
     }
-```
+````
