@@ -201,34 +201,7 @@ public class VerisureSession {
         }
     }
 
-    public synchronized void updateVerisureBroadbandStatus(String urlString,
-            Class<? extends VerisureThingJSON> jsonClass, VerisureInstallation inst) {
-
-        try {
-            VerisureThingJSON thing = callJSONRest(urlString, jsonClass);
-            logger.debug("REST Response ({})", thing);
-            if (thing != null) {
-                BigDecimal instInst = inst.getInstallationInstance();
-                if (instInst != null) {
-                    thing.setId(instInst.toString());
-                    VerisureThingJSON oldObj = verisureThings.get(thing.getId());
-                    if (oldObj == null || !oldObj.equals(thing)) {
-                        thing.setSiteId(inst.getInstallationId());
-                        thing.setSiteName(inst.getInstallationName());
-                        String id = thing.getId();
-                        if (id != null) {
-                            verisureThings.put(id, thing);
-                            notifyListeners(thing);
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.info("Failed to get all {}", urlString, e);
-        }
-    }
-
-    public synchronized void updateVerisureThings(String urlString, Class<? extends VerisureThingJSON[]> jsonClass,
+    private synchronized void updateVerisureThings(String urlString, Class<? extends VerisureThingJSON[]> jsonClass,
             @Nullable VerisureInstallation inst) {
         if (inst != null) {
             try {
@@ -309,6 +282,33 @@ public class VerisureSession {
             } catch (Exception e) {
                 logger.info("Failed to get all {}", urlString, e);
             }
+        }
+    }
+
+    private synchronized void updateVerisureBroadbandStatus(String urlString,
+            Class<? extends VerisureThingJSON> jsonClass, VerisureInstallation inst) {
+
+        try {
+            VerisureThingJSON thing = callJSONRest(urlString, jsonClass);
+            logger.debug("REST Response ({})", thing);
+            if (thing != null) {
+                BigDecimal instInst = inst.getInstallationInstance();
+                if (instInst != null) {
+                    thing.setId(instInst.toString());
+                    VerisureThingJSON oldObj = verisureThings.get(thing.getId());
+                    if (oldObj == null || !oldObj.equals(thing)) {
+                        thing.setSiteId(inst.getInstallationId());
+                        thing.setSiteName(inst.getInstallationName());
+                        String id = thing.getId();
+                        if (id != null) {
+                            verisureThings.put(id, thing);
+                            notifyListeners(thing);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.info("Failed to get all {}", urlString, e);
         }
     }
 

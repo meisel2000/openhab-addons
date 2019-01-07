@@ -170,7 +170,7 @@
             <channel id="location" typeId="location" />
             <channel id="siteName" typeId="siteName" />
             <channel id="siteId" typeId="siteId" />
-            <channel id="setSmartLockStatus" typeId="setSmartLockStatus"/>
+            <channel id="setSmartLockStatus" typeId="setSmartLockStatus" />
             <channel id="setAutoRelock" typeId="setAutoRelock"/>
             <channel id="setSmartLockVolume" typeId="setSmartLockVolume"/>
             <channel id="setSmartLockVoiceLevel" typeId="setSmartLockVoiceLevel"/>
@@ -337,8 +337,8 @@
     
     <channel-type id="setSmartLockStatus">
         <item-type>Switch</item-type>
-        <label>Change SmartLock Status</label>
-        <description>Method to change smart lock status.</description>
+        <label>SmartLock Status</label>
+        <description>Channel to control smart lock status.</description>
     </channel-type>
     
     <channel-type id="setAutoRelock">
@@ -427,7 +427,7 @@
         <label>SmartLock Status</label>
         <description>The status of the smart lock.</description>
         <state readOnly="true" pattern="%s" />
-    </channel-type>
+    </channel-type> 
     
     <channel-type id="location">
         <item-type>String</item-type>

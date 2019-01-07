@@ -507,7 +507,7 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
         if (smartLockStatus != null) {
             updateState(cuid, new StringType(smartLockStatus));
 
-            cuid = new ChannelUID(getThing().getUID(), CHANNEL_SMARTLOCK_STATUS);
+            cuid = new ChannelUID(getThing().getUID(), CHANNEL_SET_SMARTLOCK_STATUS);
             if ("locked".equals(smartLockStatus)) {
                 updateState(cuid, OnOffType.ON);
             } else if ("unlocked".equals(smartLockStatus)) {
@@ -541,7 +541,7 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
             cuid = new ChannelUID(getThing().getUID(), CHANNEL_LOCATION);
             updateState(cuid, new StringType(status.getLocation()));
 
-            cuid = new ChannelUID(getThing().getUID(), CHANNEL_AUTO_RELOCK_ENABLED);
+            cuid = new ChannelUID(getThing().getUID(), CHANNEL_SET_AUTO_RELOCK);
             Boolean autoRelock = status.getAutoRelockEnabled();
             if (autoRelock != null && autoRelock) {
                 updateState(cuid, OnOffType.ON);
