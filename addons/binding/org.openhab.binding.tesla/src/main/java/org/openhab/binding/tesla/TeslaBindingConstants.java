@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -27,6 +27,7 @@ public class TeslaBindingConstants {
     public static final String PATH_COMMAND = "command/{cmd}";
     public static final String PATH_DATA_REQUEST = "data_request/{cmd}";
     public static final String PATH_VEHICLE_ID = "/{vid}/";
+    public static final String PATH_WAKE_UP = "wake_up";
     public static final String URI_ACCESS_TOKEN = "oauth/token";
     public static final String URI_EVENT = "https://streaming.vn.teslamotors.com/stream/";
     public static final String URI_OWNERS = "https://owner-api.teslamotors.com/";

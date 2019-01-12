@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -8,13 +8,16 @@
  */
 package org.openhab.binding.plugwise.internal.handler;
 
+import static java.util.stream.Collectors.*;
 import static org.eclipse.smarthome.core.thing.ThingStatus.*;
 import static org.openhab.binding.plugwise.internal.PlugwiseBindingConstants.*;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -59,8 +62,6 @@ import org.openhab.binding.plugwise.internal.protocol.field.MACAddress;
 import org.openhab.binding.plugwise.internal.protocol.field.PowerCalibration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
 
 /**
  * <p>
@@ -217,8 +218,10 @@ public class PlugwiseRelayDeviceHandler extends AbstractPlugwiseThingHandler {
         }
     };
 
-    private final List<PlugwiseDeviceTask> recurringTasks = Lists.newArrayList(clockUpdateTask, currentPowerUpdateTask,
-            energyUpdateTask, informationUpdateTask, realTimeClockUpdateTask, setClockTask);
+    private final List<PlugwiseDeviceTask> recurringTasks = Stream
+            .of(clockUpdateTask, currentPowerUpdateTask, energyUpdateTask, informationUpdateTask,
+                    realTimeClockUpdateTask, setClockTask)
+            .collect(collectingAndThen(toList(), Collections::unmodifiableList));
 
     private final Logger logger = LoggerFactory.getLogger(PlugwiseRelayDeviceHandler.class);
     private final DeviceType deviceType;

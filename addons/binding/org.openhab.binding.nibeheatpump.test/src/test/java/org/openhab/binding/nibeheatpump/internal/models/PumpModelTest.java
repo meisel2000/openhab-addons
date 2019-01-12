@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -31,6 +31,13 @@ public class PumpModelTest {
         final String pumpModelString = "F750";
         final PumpModel pumpModel = PumpModel.getPumpModel(pumpModelString);
         assertEquals(PumpModel.F750, pumpModel);
+    }
+
+    @Test
+    public void TestF470() {
+        final String pumpModelString = "F470";
+        final PumpModel pumpModel = PumpModel.getPumpModel(pumpModelString);
+        assertEquals(PumpModel.F470, pumpModel);
     }
 
     @Test(expected = IllegalArgumentException.class)

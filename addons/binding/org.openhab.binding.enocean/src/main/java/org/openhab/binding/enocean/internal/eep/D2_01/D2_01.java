@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -75,7 +75,7 @@ public abstract class D2_01 extends _VLDMessage {
 
     protected State getSwitchingData() {
         if (getCMD() == CMD_ACTUATOR_STATUS_RESPONE) {
-            return (bytes[bytes.length - 1] & outputValueMask) == STATUS_SWITCHING_ON ? OnOffType.OFF : OnOffType.ON;
+            return (bytes[bytes.length - 1] & outputValueMask) == STATUS_SWITCHING_OFF ? OnOffType.OFF : OnOffType.ON;
         }
 
         return UnDefType.UNDEF;

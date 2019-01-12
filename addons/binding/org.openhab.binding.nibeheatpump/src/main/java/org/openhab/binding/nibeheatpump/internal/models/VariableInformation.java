@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -50,6 +50,8 @@ public class VariableInformation {
                 return F1X45.getVariableInfo(key);
             case F750:
                 return F750.getVariableInfo(key);
+            case F470:
+                return F470.getVariableInfo(key);
             default:
                 return null;
         }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -365,6 +365,18 @@ public class TeslaChannelSelectorProxy {
         FAST_CHARGER_TYPE("fast_charger_type", "fastchargertype", StringType.class, true),
         FAST_CHARGER_BRAND("fast_charger_brand", "fastchargerbrand", StringType.class, true),
         FLASH(null, "flashlights", OnOffType.class, false) {
+            @Override
+            public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
+                if (s.equals("true") || s.equals("1")) {
+                    return super.getState("ON");
+                }
+                if (s.equals("false") || s.equals("0")) {
+                    return super.getState("OFF");
+                }
+                return super.getState(s);
+            }
+        },
+        FORCE_REFRESH(null, "forcerefresh", OnOffType.class, false) {
             @Override
             public State getState(String s, TeslaChannelSelectorProxy proxy, Map<String, String> properties) {
                 if (s.equals("true") || s.equals("1")) {

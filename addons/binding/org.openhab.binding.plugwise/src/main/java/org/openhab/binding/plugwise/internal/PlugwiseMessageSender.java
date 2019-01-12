@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -19,12 +19,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.smarthome.io.transport.serial.SerialPort;
 import org.openhab.binding.plugwise.internal.protocol.AcknowledgementMessage;
 import org.openhab.binding.plugwise.internal.protocol.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import gnu.io.SerialPort;
 
 /**
  * Sends messages to the Plugwise Stick using a serial connection.
@@ -167,6 +166,7 @@ public class PlugwiseMessageSender {
         }
     }
 
+    @SuppressWarnings("resource")
     public void start() throws PlugwiseInitializationException {
         SerialPort serialPort = context.getSerialPort();
         if (serialPort == null) {

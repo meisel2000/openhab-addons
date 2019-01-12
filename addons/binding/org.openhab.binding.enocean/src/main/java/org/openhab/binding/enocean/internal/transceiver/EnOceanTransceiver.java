@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -26,6 +26,7 @@ import org.eclipse.smarthome.io.transport.serial.PortInUseException;
 import org.eclipse.smarthome.io.transport.serial.UnsupportedCommOperationException;
 import org.openhab.binding.enocean.internal.EnOceanException;
 import org.openhab.binding.enocean.internal.messages.ERP1Message;
+import org.openhab.binding.enocean.internal.messages.ERP1Message.RORG;
 import org.openhab.binding.enocean.internal.messages.ESP3Packet;
 import org.openhab.binding.enocean.internal.messages.ESP3PacketFactory;
 import org.openhab.binding.enocean.internal.messages.Response;
@@ -393,10 +394,16 @@ public abstract class EnOceanTransceiver {
                     return;
                 }
 
-                if (msg.getIsTeachIn()) {
-                    if (teachInListener != null) {
+                if (teachInListener != null) {
+                    if (msg.getIsTeachIn() || (msg.getRORG() == RORG.RPS)) {
                         logger.info("Received teach in message from {}", HexUtils.bytesToHex(msg.getSenderId()));
                         teachInListener.espPacketReceived(msg);
+                        return;
+                    }
+                } else {
+                    if (msg.getIsTeachIn()) {
+                        logger.info("Discard message because this is a teach-in telegram from {}!",
+                                HexUtils.bytesToHex(msg.getSenderId()));
                         return;
                     }
                 }
@@ -414,9 +421,10 @@ public abstract class EnOceanTransceiver {
 
     public void addPacketListener(ESP3PacketListener listener) {
 
-        listeners.computeIfAbsent(listener.getSenderIdToListenTo(), k -> new HashSet<ESP3PacketListener>())
-                .add(listener);
-        logger.debug("Listener added: {}", listener.getSenderIdToListenTo());
+        if (listeners.computeIfAbsent(listener.getSenderIdToListenTo(), k -> new HashSet<ESP3PacketListener>())
+                .add(listener)) {
+            logger.debug("Listener added: {}", listener.getSenderIdToListenTo());
+        }
     }
 
     public void removePacketListener(ESP3PacketListener listener) {

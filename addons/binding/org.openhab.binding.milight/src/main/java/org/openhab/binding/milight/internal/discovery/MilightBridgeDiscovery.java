@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -232,7 +232,7 @@ public class MilightBridgeDiscovery extends AbstractDiscoveryService implements 
             datagramSocket = new DatagramSocket(null);
             datagramSocket.setBroadcast(true);
             datagramSocket.setReuseAddress(true);
-            datagramSocket.bind(new InetSocketAddress(receivePort));
+            datagramSocket.bind(null);
         } catch (SocketException e) {
             logger.error("Opening a socket for the milight discovery service failed. {}", e.getLocalizedMessage());
             return;

@@ -1,12 +1,11 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-
 package org.openhab.binding.amazonechocontrol.internal.jsons;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -31,6 +30,8 @@ public class JsonPlayerState {
 
         public @Nullable String queueId;
         public @Nullable String mediaId;
+
+        public @Nullable Progress progress;
 
         public class InfoText {
             public boolean multiLineMode;
@@ -57,5 +58,13 @@ public class JsonPlayerState {
             public @Nullable String url;
         }
 
+        public class Progress {
+            public @Nullable Boolean allowScrubbing;
+            public @Nullable Object locationInfo;
+            public @Nullable Long mediaLength;
+            public @Nullable Long mediaProgress;
+            public @Nullable Boolean showTiming;
+            public @Nullable Boolean visible;
+        }
     }
 }

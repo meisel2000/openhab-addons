@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -26,6 +26,6 @@ public class HueStatePlug extends AbstractHueState {
 
     @Override
     public String toString() {
-        return "[on: " + on + " reachable: " + reachable;
+        return "on: " + on + ", reachable: " + reachable;
     }
 }
