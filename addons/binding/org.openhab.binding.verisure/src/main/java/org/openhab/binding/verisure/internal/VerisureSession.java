@@ -105,10 +105,10 @@ public class VerisureSession {
             this.authstring = authstring.substring(0);
             this.pinCode = pinCode;
             this.numberOfInstallations = numberOfInstallations;
+
             // Try to login to Verisure
             if (logIn()) {
                 getInstallations();
-                // updateStatus(); Do it in polling thread instead
             } else {
                 logger.error("Failed to login to Verisure!");
             }
@@ -392,9 +392,33 @@ public class VerisureSession {
         return null;
     }
 
+    private String getHtmlPageType() {
+        String urlString = BASEURL + START_SUF;
+
+        try {
+            ContentResponse response = httpClient.GET(urlString + "?_=" + System.currentTimeMillis());
+            logger.trace("HTTP Response ({}) Body:{}", response.getStatus(),
+                    response.getContentAsString().replaceAll("\n+", "\n"));
+
+            String htmlText = response.getContentAsString();
+            Document htmlDocument = Jsoup.parse(htmlText);
+            Element htmlType = htmlDocument.select("html").first();
+            String pageType = htmlType.attr("class");
+            logger.debug("Page type: {}", pageType);
+            return pageType;
+        } catch (ExecutionException e) {
+            logger.warn("ExecutionException: {}", e);
+        } catch (InterruptedException e) {
+            logger.warn("InterruptedException: {}", e);
+        } catch (TimeoutException e) {
+            logger.warn("TimeoutException: {}", e);
+        }
+        return "";
+    }
+
     private boolean areWeLoggedIn() {
         logger.debug("areWeLoggedIn() - Checking if we are logged in");
-        String urlString = BASEURL + ALARMSTATUS_PATH;
+        String urlString = BASEURL + START_SUF;
 
         try {
 
@@ -405,8 +429,11 @@ public class VerisureSession {
                 case 200:
                     // Redirection
                     logger.debug("Status code 200. Probably logged in");
-                    return true;
-
+                    if (getHtmlPageType().contains("start-page")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 case 302:
                     // Redirection
                     logger.debug("Status code 302. Redirected. Probably not logged in");
@@ -415,8 +442,11 @@ public class VerisureSession {
                 case 404:
                     // not found
                     logger.debug("Status code 404. Probably logged on too");
-                    return true;
-
+                    if (getHtmlPageType().contains("start-page")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 default:
                     logger.info("Status code {} body {}", response.getStatus(), response.getContentAsString());
                     break;
@@ -441,6 +471,7 @@ public class VerisureSession {
             } else {
                 try {
                     Thread.sleep(2000);
+
                     Boolean success = logIn();
                     if (success) {
                         areWeLoggedOut = false;
