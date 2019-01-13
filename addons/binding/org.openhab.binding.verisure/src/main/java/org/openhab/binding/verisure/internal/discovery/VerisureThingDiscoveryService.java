@@ -91,6 +91,8 @@ public class VerisureThingDiscoveryService extends AbstractDiscoveryService {
                 String label = "ID: " + value.getId();
                 if (value.getLocation() != null) {
                     label += ", Location: " + value.getLocation();
+                } else if (value.getSiteName() != null) {
+                    label += ", Site name: " + value.getSiteName();
                 }
                 DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(thingUID).withBridge(bridgeUID)
                         .withLabel(label).build();

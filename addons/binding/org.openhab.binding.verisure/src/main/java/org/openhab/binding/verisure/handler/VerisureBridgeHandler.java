@@ -8,7 +8,7 @@
  */
 package org.openhab.binding.verisure.handler;
 
-import static org.openhab.binding.verisure.VerisureBindingConstants.THING_TYPE_BRIDGE;
+import static org.openhab.binding.verisure.VerisureBindingConstants.*;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public class VerisureBridgeHandler extends BaseBridgeHandler {
 
-    private static final int REFRESH_DELAY = 10;
+    public static final int REFRESH_DELAY = 10;
 
     @Override
     protected void updateThing(Thing thing) {
@@ -103,9 +103,17 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        logger.debug("Handle command {} ", command);
+        logger.debug("Handle command {} on channelUID: {}", command, channelUID);
         if (command instanceof RefreshType) {
-            scheduleImmediateRefresh();
+            if (channelUID.getId().equals(CHANNEL_STATUS) && channelUID.getThingUID().equals(getThing().getUID())) {
+                logger.debug("Refresh command on channel {} will trigger instant refresh", channelUID);
+                scheduleImmediateRefresh(0);
+            } else {
+                logger.debug("Refresh command on channel {} will trigger fresh in {} seconds", channelUID,
+                        REFRESH_DELAY);
+                scheduleImmediateRefresh(REFRESH_DELAY);
+            }
+
         } else {
             logger.warn("unknown command! {}", command);
         }
@@ -144,14 +152,14 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
         }
     }
 
-    void scheduleImmediateRefresh() {
+    void scheduleImmediateRefresh(int refreshDelay) {
         this.immediateRefreshJobLock.lock();
         try {
             // We schedule in 10 sec, to avoid multiple updates
             if (refreshJob != null) {
                 logger.debug("Current remaining delay {} for refresh job {}", refreshJob.getDelay(TimeUnit.SECONDS),
                         refreshJob);
-                if (refreshJob != null && refreshJob.getDelay(TimeUnit.SECONDS) > REFRESH_DELAY) {
+                if (refreshJob != null && refreshJob.getDelay(TimeUnit.SECONDS) > refreshDelay) {
                     if (immediateRefreshJob == null || ((immediateRefreshJob != null)
                             && (immediateRefreshJob.getDelay(TimeUnit.SECONDS) <= 0))) {
                         if (immediateRefreshJob != null) {
@@ -161,8 +169,8 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
                         // Note we are using getDelay() instead of isDone() as we want to allow Things to schedule a
                         // refresh if their status is pending. As the status update happens inside the pollingRunnable
                         // execution the isDone() will return false and would not allow the rescheduling of the task.
-                        immediateRefreshJob = scheduler.schedule(pollingRunnable, REFRESH_DELAY, TimeUnit.SECONDS);
                         logger.debug("Scheduling immediate refresh job {}", immediateRefreshJob);
+                        immediateRefreshJob = scheduler.schedule(pollingRunnable, refreshDelay, TimeUnit.SECONDS);
                     }
                 }
             }
