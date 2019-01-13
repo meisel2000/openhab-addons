@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -60,7 +60,7 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
         initialize();
     }
 
-    public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.singleton(THING_TYPE_BRIDGE);
+    public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.singleton(THING_TYPE_BRIDGE);
 
     private Logger logger = LoggerFactory.getLogger(VerisureBridgeHandler.class);
 
@@ -113,7 +113,6 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
                         REFRESH_DELAY);
                 scheduleImmediateRefresh(REFRESH_DELAY);
             }
-
         } else {
             logger.warn("unknown command! {}", command);
         }

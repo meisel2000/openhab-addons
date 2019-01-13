@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -59,6 +59,7 @@ public class VerisureSession {
     private List<DeviceStatusListener> deviceStatusListeners = new CopyOnWriteArrayList<>();
     private HttpClient httpClient;
     private Boolean areWeLoggedOut = new Boolean(true);
+    private Hashtable<String, @Nullable VerisureInstallation> verisureInstallations = new Hashtable<String, @Nullable VerisureInstallation>();
 
     private class VerisureInstallation {
         private @Nullable String installationName;
@@ -88,10 +89,7 @@ public class VerisureSession {
         public void setInstallationInstance(BigDecimal installationInstance) {
             this.installationInstance = installationInstance;
         }
-
     }
-
-    private Hashtable<String, @Nullable VerisureInstallation> verisureInstallations = new Hashtable<String, @Nullable VerisureInstallation>();;
 
     public VerisureSession(HttpClient httpClient) {
         this.httpClient = httpClient;
@@ -287,7 +285,6 @@ public class VerisureSession {
 
     private synchronized void updateVerisureBroadbandStatus(String urlString,
             Class<? extends VerisureThingJSON> jsonClass, VerisureInstallation inst) {
-
         try {
             VerisureThingJSON thing = callJSONRest(urlString, jsonClass);
             logger.debug("REST Response ({})", thing);
@@ -421,7 +418,6 @@ public class VerisureSession {
         String urlString = BASEURL + START_SUF;
 
         try {
-
             ContentResponse response = httpClient.newRequest(urlString).method(HttpMethod.HEAD).send();
             logger.debug("HTTP HEAD response: " + response.getContentAsString());
 
@@ -451,7 +447,6 @@ public class VerisureSession {
                     logger.info("Status code {} body {}", response.getStatus(), response.getContentAsString());
                     break;
             }
-
         } catch (ExecutionException e) {
             logger.warn("ExecutionException: {}", e);
         } catch (InterruptedException e) {
@@ -793,11 +788,6 @@ public class VerisureSession {
 
     public boolean unregisterDeviceStatusListener(DeviceStatusListener deviceStatusListener) {
         logger.debug("unregisterDeviceStatusListener for listener {}", deviceStatusListener);
-        boolean result = deviceStatusListeners.remove(deviceStatusListener);
-        if (result) {
-            // onUpdate();
-        }
-        return result;
+        return deviceStatusListeners.remove(deviceStatusListener);
     }
-
 }

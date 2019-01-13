@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -44,12 +44,12 @@ import com.google.common.collect.Sets;
  */
 @NonNullByDefault
 public class VerisureThingDiscoveryService extends AbstractDiscoveryService {
-    private final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Sets
+    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Sets
             .union(VerisureBridgeHandler.SUPPORTED_THING_TYPES, VerisureThingHandler.SUPPORTED_THING_TYPES);
 
     private Logger logger = LoggerFactory.getLogger(VerisureThingDiscoveryService.class);
 
-    private final static int SEARCH_TIME = 60;
+    private static final int SEARCH_TIME = 60;
 
     private @Nullable VerisureBridgeHandler verisureBridgeHandler;
 

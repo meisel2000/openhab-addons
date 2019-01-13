@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2018 by the respective copyright holders.
+ * Copyright (c) 2010-2019 by the respective copyright holders.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -56,7 +56,7 @@ import com.google.common.collect.Sets;
 @NonNullByDefault
 public class VerisureThingHandler extends BaseThingHandler implements DeviceStatusListener {
 
-    public final static Set<ThingTypeUID> SUPPORTED_THING_TYPES = Sets.newHashSet(THING_TYPE_ALARM,
+    public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Sets.newHashSet(THING_TYPE_ALARM,
             THING_TYPE_SMARTPLUG, THING_TYPE_SMOKEDETECTOR, THING_TYPE_WATERDETETOR, THING_TYPE_SIREN,
             THING_TYPE_SMARTLOCK, THING_TYPE_USERPRESENCE, THING_TYPE_DOORWINDOW, THING_TYPE_BROADBAND_CONNECTION,
             THING_TYPE_NIGHT_CONTROL);
@@ -70,7 +70,6 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
     public VerisureThingHandler(Thing thing) {
         super(thing);
         this.id = thing.getUID().getId();
-
     }
 
     @Override
@@ -171,7 +170,6 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
                 }
             }
         }
-
     }
 
     private void handleSmartPlugState(Command command) {
@@ -412,9 +410,7 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
             }
         } else {
             logger.warn("cant handle this thing typeuid: {}", getThing().getThingTypeUID());
-
         }
-
     }
 
     private void updateClimateDeviceState(VerisureClimateBaseJSON status) {
@@ -495,7 +491,6 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
                 StringType instName = new StringType(status.getSiteName());
                 updateState(cuid, instName);
             }
-
         } catch (Exception e) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
         }
@@ -577,7 +572,6 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
             StringType instName = new StringType(status.getSiteName());
             updateState(cuid, instName);
         }
-
     }
 
     private void updateDoorWindowState(VerisureDoorWindowJSON status) {
