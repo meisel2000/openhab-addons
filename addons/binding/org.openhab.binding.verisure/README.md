@@ -27,7 +27,7 @@ This binding supports the following thing types:
 
 ## Binding Configuration
 
-You will have to configure the bridge with username and password, these must be the same values as used when logging into https://mypages.verisure.com. You can also configure your pin-code to be able to lock/unlock the SmartLock and arm/unarm the alarm. It is also possible to configure the number of installations you have, default is 1.
+You will have to configure the bridge with username and password, these must be the same values as used when logging into https://mypages.verisure.com. You can also configure your pin-code to be able to lock/unlock the SmartLock and arm/unarm the alarm. It is also possible to configure the number of Verisure installations/sites you have, default is 1.
 
 ## Discovery
 
@@ -38,6 +38,12 @@ After the configuration of the Verisure Bridge all of the available Sensors, Ala
 Only the bridge require manual configuration. The devices and sensors should not be added by hand, let the discovery/inbox initially configure these.
 
 ## Supported Things and Channels 
+
+**Verisure Bridge** ([bridge]) supports the following channel:
+<table>
+<tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
+<tr><td>status</td><td>String</td><td>This channel can be used to trigger an instant refresh by sending a sendCommand(VerisureBridgeStatus, RefreshType.REFRESH)</td></tr>
+</table>
 
 **Verisure Alarm** ([alarm]) supports the following channels:
 
@@ -64,7 +70,6 @@ Only the bridge require manual configuration. The devices and sensors should not
 <tr><td>siteName</td><td>String</td><td>This channel reports the name of the site.</td></tr>
 <tr><td>siteId</td><td>Number</td><td>This channel reports the site ID of the site.</td></tr>
 </table>
-
 
 **Verisure Water Detector** ([waterDetector]) supports the following channels:
  
@@ -101,7 +106,6 @@ Only the bridge require manual configuration. The devices and sensors should not
 <tr><td>siteName</td><td>String</td><td>This channel reports the name of the site.</td></tr>
 <tr><td>siteId</td><td>Number</td><td>This channel reports the site ID of the site.</td></tr>
 </table>
-
 
 **Verisure Yaleman SmartLock** ([smartLock]) supports the following channels:
 
