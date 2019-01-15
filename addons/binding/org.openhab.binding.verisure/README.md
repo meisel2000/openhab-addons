@@ -42,7 +42,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 **Verisure Bridge** ([bridge]) supports the following channel:
 <table>
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
-<tr><td>status</td><td>String</td><td>This channel can be used to trigger an instant refresh by sending a sendCommand(VerisureBridgeStatus, RefreshType.REFRESH)</td></tr>
+<tr><td>status</td><td>String</td><td>This channel can be used to trigger an instant refresh by sending a RefreshType.REFRESH command.</td></tr>
 </table>
 
 **Verisure Alarm** ([alarm]) supports the following channels:
@@ -113,7 +113,7 @@ Only the bridge require manual configuration. The devices and sensors should not
 <tr><td><b>Channel Type ID</b></td> <td><b>Item Type</b></td> <td><b>Description</b></td> </tr>
 <tr><td>status</td><td>String</td><td>This channel reports the lock status.</td></tr>
 <tr><td>numericStatus</td><td>Number</td><td>This channel reports the lock status as a number.</td></tr>
-<tr><td>smartLockStatus</td><td>Number</td><td>This channel reports the lock status as a number.</td></tr>
+<tr><td>smartLockStatus</td><td>Number</td><td>This channel reports the lock status as a display string.</td></tr>
 <tr><td>timestamp</td><td>String</td><td>This channel reports the last time lock was changed (not a Date).</td></tr>
 <tr><td>changedByUser</td><td>String</td><td>This channel reports the user that last changed the state of the lock.</td></tr>
 <tr><td>autoRelockEnabled</td><td>String</td><td>This channel reports the status of the Auto-lock function.</td></tr>
