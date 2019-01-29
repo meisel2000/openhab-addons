@@ -218,45 +218,47 @@ public class VerisureSession {
                                 } else {
                                     VerisureThingJSON smartLockThing = callJSONRest(SMARTLOCK_PATH + thing.getId(),
                                             VerisureSmartLockJSON.class);
-                                    if (smartLockThing != null) {
-                                        String date = ((VerisureAlarmJSON) thing).getDate();
-                                        if (date != null) {
-                                            ((VerisureSmartLockJSON) smartLockThing).setDate(date);
-                                        }
-                                        String notAllowedReason = ((VerisureAlarmJSON) thing).getNotAllowedReason();
-                                        if (notAllowedReason != null) {
-                                            ((VerisureSmartLockJSON) smartLockThing)
-                                                    .setNotAllowedReason(notAllowedReason);
-                                        }
-                                        Boolean changeAllowed = ((VerisureAlarmJSON) thing).getChangeAllowed();
-                                        if (changeAllowed != null) {
-                                            ((VerisureSmartLockJSON) smartLockThing).setChangeAllowed(changeAllowed);
-                                        }
-                                        String label = ((VerisureAlarmJSON) thing).getLabel();
-                                        if (label != null) {
-                                            ((VerisureSmartLockJSON) smartLockThing).setLabel(label);
-                                        }
-                                        if (type != null) {
-                                            ((VerisureSmartLockJSON) smartLockThing).setType(type);
-                                        }
-                                        String name = ((VerisureAlarmJSON) thing).getName();
-                                        if (name != null) {
-                                            ((VerisureSmartLockJSON) smartLockThing).setName(name);
-                                        }
-                                        String location = ((VerisureAlarmJSON) thing).getLocation();
-                                        if (location != null) {
-                                            ((VerisureSmartLockJSON) smartLockThing).setLocation(location);
-                                        }
-                                        String status = ((VerisureAlarmJSON) thing).getStatus();
-                                        if (status != null) {
-                                            ((VerisureSmartLockJSON) smartLockThing).setStatus(status);
-                                        }
-                                        String id = smartLockThing.getId();
-                                        if (id != null) {
-                                            smartLockThing.setId(id.replaceAll("[^a-zA-Z0-9_]", "_"));
-                                        }
-                                        thing = smartLockThing;
+                                    logger.debug("REST Response ({})", smartLockThing);
+                                    if (smartLockThing == null) {
+                                        // Fix if doorlock query gives empty JSON
+                                        smartLockThing = new VerisureSmartLockJSON();
                                     }
+                                    String date = ((VerisureAlarmJSON) thing).getDate();
+                                    if (date != null) {
+                                        ((VerisureSmartLockJSON) smartLockThing).setDate(date);
+                                    }
+                                    String notAllowedReason = ((VerisureAlarmJSON) thing).getNotAllowedReason();
+                                    if (notAllowedReason != null) {
+                                        ((VerisureSmartLockJSON) smartLockThing).setNotAllowedReason(notAllowedReason);
+                                    }
+                                    Boolean changeAllowed = ((VerisureAlarmJSON) thing).getChangeAllowed();
+                                    if (changeAllowed != null) {
+                                        ((VerisureSmartLockJSON) smartLockThing).setChangeAllowed(changeAllowed);
+                                    }
+                                    String label = ((VerisureAlarmJSON) thing).getLabel();
+                                    if (label != null) {
+                                        ((VerisureSmartLockJSON) smartLockThing).setLabel(label);
+                                    }
+                                    if (type != null) {
+                                        ((VerisureSmartLockJSON) smartLockThing).setType(type);
+                                    }
+                                    String name = ((VerisureAlarmJSON) thing).getName();
+                                    if (name != null) {
+                                        ((VerisureSmartLockJSON) smartLockThing).setName(name);
+                                    }
+                                    String location = ((VerisureAlarmJSON) thing).getLocation();
+                                    if (location != null) {
+                                        ((VerisureSmartLockJSON) smartLockThing).setLocation(location);
+                                    }
+                                    String status = ((VerisureAlarmJSON) thing).getStatus();
+                                    if (status != null) {
+                                        ((VerisureSmartLockJSON) smartLockThing).setStatus(status);
+                                    }
+                                    String id = ((VerisureAlarmJSON) thing).getId();
+                                    if (id != null) {
+                                        smartLockThing.setId(id.replaceAll("[^a-zA-Z0-9_]", "_"));
+                                    }
+                                    thing = smartLockThing;
                                 }
                             } else {
                                 String id = thing.getId();
