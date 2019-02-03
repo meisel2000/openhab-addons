@@ -80,26 +80,6 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
     private @Nullable VerisureSession session;
     private HttpClient httpClient;
 
-    Runnable pollingRunnable = new Runnable() {
-        @Override
-        public void run() {
-            logger.debug("VerisureBridgeHandler - Polling thread is up'n running!");
-            try {
-                if (session != null) {
-                    boolean success = session.refresh();
-                    if (success) {
-                        updateStatus(ThingStatus.ONLINE);
-                    } else {
-                        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
-                    }
-                }
-            } catch (Exception e) {
-                logger.debug("Exception occurred during execution: {}", e.getMessage(), e);
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
-            }
-        }
-    };
-
     public VerisureBridgeHandler(Bridge bridge, HttpClient httpClient) {
         super(bridge);
         this.httpClient = httpClient;
@@ -153,70 +133,6 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
         }
     }
 
-    void scheduleImmediateRefresh(int refreshDelay) {
-        this.immediateRefreshJobLock.lock();
-        try {
-            // We schedule in 10 sec, to avoid multiple updates
-            if (refreshJob != null) {
-                logger.debug("Current remaining delay {} for refresh job {}", refreshJob.getDelay(TimeUnit.SECONDS),
-                        refreshJob);
-                if (refreshJob != null && refreshJob.getDelay(TimeUnit.SECONDS) > refreshDelay) {
-                    if (immediateRefreshJob == null || ((immediateRefreshJob != null)
-                            && (immediateRefreshJob.getDelay(TimeUnit.SECONDS) <= 0))) {
-                        if (immediateRefreshJob != null) {
-                            logger.debug("Current immediateRefreshJob delay {} for immediate refresh job {}",
-                                    immediateRefreshJob.getDelay(TimeUnit.SECONDS), immediateRefreshJob);
-                        }
-                        // Note we are using getDelay() instead of isDone() as we want to allow Things to schedule a
-                        // refresh if their status is pending. As the status update happens inside the pollingRunnable
-                        // execution the isDone() will return false and would not allow the rescheduling of the task.
-                        logger.debug("Scheduling immediate refresh job {}", immediateRefreshJob);
-                        immediateRefreshJob = scheduler.schedule(pollingRunnable, refreshDelay, TimeUnit.SECONDS);
-                    }
-                }
-            }
-        } catch (RejectedExecutionException e) {
-            logger.error("Immediate refresh job cannot be scheduled!");
-        } finally {
-            this.immediateRefreshJobLock.unlock();
-        }
-    }
-
-    private void startAutomaticRefresh() {
-        logger.debug("Start automatic refresh {}", refreshJob);
-        if (refreshJob == null || (refreshJob != null && refreshJob.isCancelled())) {
-            try {
-                refreshJob = scheduler.scheduleWithFixedDelay(pollingRunnable, REFRESH_DELAY, refresh.intValue(),
-                        TimeUnit.SECONDS);
-                logger.debug("Scheduling at fixed delay refreshjob {}", refreshJob);
-            } catch (IllegalArgumentException e) {
-                logger.error("Refresh time value is invalid! Please change the refresh time configuration!", e);
-            } catch (RejectedExecutionException e) {
-                logger.error("Automatic refresh job cannot be started!");
-            }
-        }
-    }
-
-    private void stopImmediateRefresh() {
-        logger.debug("Stop immediate refresh for job {}", immediateRefreshJob);
-        if (immediateRefreshJob == null || (immediateRefreshJob != null && !immediateRefreshJob.isCancelled())) {
-            if (immediateRefreshJob != null) {
-                immediateRefreshJob.cancel(true);
-            }
-            immediateRefreshJob = null;
-        }
-    }
-
-    private void stopAutomaticRefresh() {
-        logger.debug("Stop automatic refresh for job {}", refreshJob);
-        if (refreshJob == null || (refreshJob != null && !refreshJob.isCancelled())) {
-            if (refreshJob != null) {
-                refreshJob.cancel(true);
-            }
-            refreshJob = null;
-        }
-    }
-
     @Override
     public void dispose() {
         logger.debug("Handler disposed.");
@@ -260,4 +176,88 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
         }
     }
 
+    Runnable pollingRunnable = () -> {
+        refreshAndUpdateStatus();
+    };
+
+    private void refreshAndUpdateStatus() {
+        logger.debug("VerisureBridgeHandler - Polling thread is up'n running!");
+        try {
+            if (session != null) {
+                boolean success = session.refresh();
+                if (success) {
+                    updateStatus(ThingStatus.ONLINE);
+                } else {
+                    updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
+                }
+            }
+        } catch (Exception e) {
+            logger.debug("Exception occurred during execution: {}", e.getMessage(), e);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
+        }
+    }
+
+    void scheduleImmediateRefresh(int refreshDelay) {
+        this.immediateRefreshJobLock.lock();
+        try {
+            // We schedule in 10 sec, to avoid multiple updates
+            if (refreshJob != null) {
+                logger.debug("Current remaining delay {} for refresh job {}", refreshJob.getDelay(TimeUnit.SECONDS),
+                        refreshJob);
+                if (refreshJob != null && refreshJob.getDelay(TimeUnit.SECONDS) > refreshDelay) {
+                    if (immediateRefreshJob == null || ((immediateRefreshJob != null)
+                            && (immediateRefreshJob.getDelay(TimeUnit.SECONDS) <= 0))) {
+                        if (immediateRefreshJob != null) {
+                            logger.debug("Current immediateRefreshJob delay {} for immediate refresh job {}",
+                                    immediateRefreshJob.getDelay(TimeUnit.SECONDS), immediateRefreshJob);
+                        }
+                        // Note we are using getDelay() instead of isDone() as we want to allow Things to schedule a
+                        // refresh if their status is pending. As the status update happens inside the pollingRunnable
+                        // execution the isDone() will return false and would not allow the rescheduling of the task.
+                        logger.debug("Scheduling immediate refresh job {}", immediateRefreshJob);
+                        immediateRefreshJob = scheduler.schedule(pollingRunnable, refreshDelay, TimeUnit.SECONDS);
+                    }
+                }
+            }
+        } catch (RejectedExecutionException e) {
+            logger.warn("Immediate refresh job cannot be scheduled!");
+        } finally {
+            this.immediateRefreshJobLock.unlock();
+        }
+    }
+
+    private void startAutomaticRefresh() {
+        logger.debug("Start automatic refresh {}", refreshJob);
+        if (refreshJob == null || (refreshJob != null && refreshJob.isCancelled())) {
+            try {
+                refreshJob = scheduler.scheduleWithFixedDelay(pollingRunnable, REFRESH_DELAY, refresh.intValue(),
+                        TimeUnit.SECONDS);
+                logger.debug("Scheduling at fixed delay refreshjob {}", refreshJob);
+            } catch (IllegalArgumentException e) {
+                logger.error("Refresh time value is invalid! Please change the refresh time configuration!", e);
+            } catch (RejectedExecutionException e) {
+                logger.error("Automatic refresh job cannot be started!");
+            }
+        }
+    }
+
+    private void stopImmediateRefresh() {
+        logger.debug("Stop immediate refresh for job {}", immediateRefreshJob);
+        if (immediateRefreshJob == null || (immediateRefreshJob != null && !immediateRefreshJob.isCancelled())) {
+            if (immediateRefreshJob != null) {
+                immediateRefreshJob.cancel(true);
+            }
+            immediateRefreshJob = null;
+        }
+    }
+
+    private void stopAutomaticRefresh() {
+        logger.debug("Stop automatic refresh for job {}", refreshJob);
+        if (refreshJob == null || (refreshJob != null && !refreshJob.isCancelled())) {
+            if (refreshJob != null) {
+                refreshJob.cancel(true);
+            }
+            refreshJob = null;
+        }
+    }
 }

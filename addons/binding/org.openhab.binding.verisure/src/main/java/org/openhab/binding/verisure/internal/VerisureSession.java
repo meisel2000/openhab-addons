@@ -40,10 +40,10 @@ import org.openhab.binding.verisure.internal.model.VerisureBroadbandConnectionJS
 import org.openhab.binding.verisure.internal.model.VerisureClimateBaseJSON;
 import org.openhab.binding.verisure.internal.model.VerisureDoorWindowJSON;
 import org.openhab.binding.verisure.internal.model.VerisureSmartLockJSON;
+import org.openhab.binding.verisure.internal.model.VerisureSmartLockJSON.DoorLockVolumeSettings;
 import org.openhab.binding.verisure.internal.model.VerisureSmartPlugJSON;
 import org.openhab.binding.verisure.internal.model.VerisureThingJSON;
 import org.openhab.binding.verisure.internal.model.VerisureUserPresenceJSON;
-import org.openhab.binding.verisure.internal.model.VerisureSmartLockJSON.DoorLockVolumeSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +59,36 @@ import com.google.gson.GsonBuilder;
  */
 @NonNullByDefault
 public class VerisureSession {
+    private class VerisureInstallation {
+        private @Nullable String installationName;
+        private @Nullable BigDecimal installationInstance;
+        private @Nullable BigDecimal installationId;
+
+        public VerisureInstallation(@Nullable String installationName) {
+            this.installationName = installationName;
+        }
+
+        public @Nullable BigDecimal getInstallationId() {
+            return installationId;
+        }
+
+        public @Nullable BigDecimal getInstallationInstance() {
+            return installationInstance;
+        }
+
+        public @Nullable String getInstallationName() {
+            return installationName;
+        }
+
+        public void setInstallationId(BigDecimal installationId) {
+            this.installationId = installationId;
+        }
+
+        public void setInstallationInstance(BigDecimal installationInstance) {
+            this.installationInstance = installationInstance;
+        }
+    }
+
     private HashMap<String, org.openhab.binding.verisure.internal.model.VerisureThingJSON> verisureThings = new HashMap<String, org.openhab.binding.verisure.internal.model.VerisureThingJSON>();
     private Logger logger = LoggerFactory.getLogger(VerisureSession.class);
     private @Nullable String authstring;
@@ -69,40 +99,115 @@ public class VerisureSession {
     private List<DeviceStatusListener> deviceStatusListeners = new CopyOnWriteArrayList<>();
     private HttpClient httpClient;
     private Boolean areWeLoggedOut = new Boolean(true);
+
     private Hashtable<String, @Nullable VerisureInstallation> verisureInstallations = new Hashtable<String, @Nullable VerisureInstallation>();
-
-    private class VerisureInstallation {
-        private @Nullable String installationName;
-        private @Nullable BigDecimal installationInstance;
-        private @Nullable BigDecimal installationId;
-
-        public VerisureInstallation(@Nullable String installationName) {
-            this.installationName = installationName;
-        }
-
-        public @Nullable String getInstallationName() {
-            return installationName;
-        }
-
-        public @Nullable BigDecimal getInstallationId() {
-            return installationId;
-        }
-
-        public void setInstallationId(BigDecimal installationId) {
-            this.installationId = installationId;
-        }
-
-        public @Nullable BigDecimal getInstallationInstance() {
-            return installationInstance;
-        }
-
-        public void setInstallationInstance(BigDecimal installationInstance) {
-            this.installationInstance = installationInstance;
-        }
-    }
 
     public VerisureSession(HttpClient httpClient) {
         this.httpClient = httpClient;
+    }
+
+    public boolean armAwayAlarm(String installationName) {
+        logger.debug("Sending command to arm_away the alarm! Installation name:" + installationName);
+        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
+        if (verisureInstallation != null) {
+            BigDecimal instInst = verisureInstallation.getInstallationInstance();
+            if (instInst != null) {
+                configureInstallationInstance(instInst);
+                String url = BASEURL + ALARM_COMMAND;
+                String data = "code=" + pinCode + "&state=ARMED_AWAY" + "&_csrf=" + csrf;
+                logger.debug("Trying to armAwayAlarm with URL: " + url + " and data: " + data);
+                sendHTTPpost(url, data);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean armHomeAlarm(String installationName) {
+        logger.debug("Sending command to arm_home the alarm! Installation name:" + installationName);
+        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
+        if (verisureInstallation != null) {
+            BigDecimal instInst = verisureInstallation.getInstallationInstance();
+            if (instInst != null) {
+                configureInstallationInstance(instInst);
+                String url = BASEURL + ALARM_COMMAND;
+                String data = "code=" + pinCode + "&state=ARMED_HOME" + "&_csrf=" + csrf;
+                logger.debug("Trying to armHomeAlarm with URL: " + url + " and data: " + data);
+                sendHTTPpost(url, data);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean autoRelockOff(@Nullable String id, @Nullable String installationName, @Nullable String location,
+            @Nullable DoorLockVolumeSettings lockSettings) {
+        logger.debug("Sending command to turn off Auto Relock!");
+        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
+        if (verisureInstallation != null) {
+            try {
+                BigDecimal instInst = verisureInstallation.getInstallationInstance();
+                if (instInst != null && id != null && lockSettings != null) {
+                    configureInstallationInstance(instInst);
+                    String deviceLabelUrl = id.replaceAll("_", "+");
+                    String locationUTF8 = URLEncoder.encode(location, "utf-8");
+                    String url = BASEURL + SMARTLOCK_SET_COMMAND;
+                    String data = "location=" + locationUTF8 + "&_autoRelockEnabled=on" + "&deviceLabel="
+                            + deviceLabelUrl + "&doorLockVolumeSettings.volume=" + lockSettings.getVolume()
+                            + "&doorLockVolumeSettings.voiceLevel=" + lockSettings.getVoiceLevel() + "&_csrf=" + csrf;
+                    logger.debug("Trying to turn on Auto Relock with URL: " + url + " and data:\n" + data);
+                    sendHTTPpost(url, data);
+                    return true;
+                }
+            } catch (UnsupportedEncodingException e) {
+                logger.warn("Failed in autoRelockOff", e);
+            }
+        }
+        return false;
+    }
+
+    public boolean autoRelockOn(@Nullable String id, @Nullable String installationName, @Nullable String location,
+            @Nullable DoorLockVolumeSettings lockSettings) {
+        logger.debug("Sending command to turn on Auto Relock!");
+        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
+        if (verisureInstallation != null) {
+            try {
+                BigDecimal instInst = verisureInstallation.getInstallationInstance();
+                if (instInst != null && id != null && lockSettings != null) {
+                    configureInstallationInstance(instInst);
+                    String deviceLabelUrl = id.replaceAll("_", "+");
+                    String locationUTF8 = URLEncoder.encode(location, "utf-8");
+                    String url = BASEURL + SMARTLOCK_SET_COMMAND;
+                    String data = "location=" + locationUTF8 + "&autoRelockEnabled=true&_autoRelockEnabled=on"
+                            + "&deviceLabel=" + deviceLabelUrl + "&doorLockVolumeSettings.volume="
+                            + lockSettings.getVolume() + "&doorLockVolumeSettings.voiceLevel="
+                            + lockSettings.getVoiceLevel() + "&_csrf=" + csrf;
+                    logger.debug("Trying to turn on Auto Relock with URL: " + url + " and data:\n" + data);
+                    sendHTTPpost(url, data);
+                    return true;
+                }
+            } catch (UnsupportedEncodingException e) {
+                logger.warn("Failed in autoRelockOn", e);
+            }
+        }
+        return false;
+    }
+
+    public boolean disarmAlarm(String installationName) {
+        logger.debug("Sending command to disarm the alarm! Installation name: " + installationName);
+        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
+        if (verisureInstallation != null) {
+            BigDecimal instInst = verisureInstallation.getInstallationInstance();
+            if (instInst != null) {
+                configureInstallationInstance(instInst);
+                String url = BASEURL + ALARM_COMMAND;
+                String data = "code=" + pinCode + "&state=DISARMED" + "&_csrf=" + csrf;
+                logger.debug("Trying to disarmAlarm with URL: " + url + " and data: " + data);
+                sendHTTPpost(url, data);
+                return true;
+            }
+        }
+        return false;
     }
 
     public void initialize(@Nullable String authstring, @Nullable BigDecimal pinCode,
@@ -121,6 +226,293 @@ public class VerisureSession {
         }
     }
 
+    public boolean lock(String id, String installationName) {
+        logger.debug("Sending command to lock!");
+        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
+        if (verisureInstallation != null) {
+            BigDecimal instInst = verisureInstallation.getInstallationInstance();
+            if (instInst != null) {
+                configureInstallationInstance(instInst);
+                String smartLockUrl = id.replaceAll("_", "");
+                String url = BASEURL + SMARTLOCK_LOCK_COMMAND;
+                String data = "code=" + pinCode + "&state=LOCKED&deviceLabel=" + smartLockUrl + "&_csrf=" + csrf;
+                logger.debug("Trying to lock with URL: " + url + " and data: " + data);
+                sendHTTPpost(url, data);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean refresh() {
+        // Try to refresh 3 times
+        for (int i = 0; i < 3; i++) {
+            if (!areWeLoggedOut && areWeLoggedIn()) {
+                updateStatus();
+                return true;
+            } else {
+                try {
+                    Thread.sleep(2000);
+                    Boolean success = logIn();
+                    if (success) {
+                        areWeLoggedOut = false;
+                    } else {
+                        areWeLoggedOut = true;
+                    }
+                } catch (InterruptedException e) {
+                    logger.warn("InterruptedException waiting for new login {}", e);
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean setSmartLockVoiceLevel(@Nullable String id, @Nullable String installationName,
+            @Nullable String location, @Nullable Boolean autoRelockEnabled,
+            @Nullable DoorLockVolumeSettings lockSettings, @Nullable String voiceLevelSetting) {
+        logger.debug("Sending command to set SmartLock voice level!");
+        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
+        if (verisureInstallation != null) {
+            BigDecimal instInst = verisureInstallation.getInstallationInstance();
+            if (instInst != null && id != null && lockSettings != null) {
+                configureInstallationInstance(instInst);
+                String autoRelockStatus;
+                if (autoRelockEnabled != null && autoRelockEnabled) {
+                    autoRelockStatus = "&autoRelockEnabled=true&_autoRelockEnabled=on";
+                } else {
+                    autoRelockStatus = "&_autoRelockEnabled=on";
+                }
+                String deviceLabelUrl = id.replaceAll("_", "+");
+                String url = BASEURL + SMARTLOCK_SET_COMMAND;
+                String data = "location=" + location + autoRelockStatus + "&deviceLabel=" + deviceLabelUrl
+                        + "&doorLockVolumeSettings.volume=" + lockSettings.getVolume()
+                        + "&doorLockVolumeSettings.voiceLevel=" + voiceLevelSetting + "&_csrf=" + csrf;
+                logger.debug("Trying to set SmartLock voice level with URL: " + url + " and data:\n" + data);
+                sendHTTPpost(url, data);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean setSmartLockVolume(@Nullable String id, @Nullable String installationName, @Nullable String location,
+            @Nullable Boolean autoRelockEnabled, @Nullable DoorLockVolumeSettings lockSettings,
+            @Nullable String volumeSetting) {
+        logger.debug("Sending command to set SmartLock volume!");
+        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
+        if (verisureInstallation != null) {
+            BigDecimal instInst = verisureInstallation.getInstallationInstance();
+            if (instInst != null && id != null && lockSettings != null) {
+                configureInstallationInstance(instInst);
+                String autoRelockStatus;
+                if (autoRelockEnabled != null && autoRelockEnabled) {
+                    autoRelockStatus = "&autoRelockEnabled=true&_autoRelockEnabled=on";
+                } else {
+                    autoRelockStatus = "&_autoRelockEnabled=on";
+                }
+                String deviceLabelUrl = id.replaceAll("_", "+");
+                String url = BASEURL + SMARTLOCK_SET_COMMAND;
+                String data = "location=" + location + autoRelockStatus + "&deviceLabel=" + deviceLabelUrl
+                        + "&doorLockVolumeSettings.volume=" + volumeSetting + "&doorLockVolumeSettings.voiceLevel="
+                        + lockSettings.getVoiceLevel() + "&_csrf=" + csrf;
+                logger.debug("Trying to set SmartLock volume with URL: " + url + " and data:\n" + data);
+                sendHTTPpost(url, data);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean smartPlugOff(String smartPlug, String installationName) {
+        logger.debug("Sending command to off SmartPlug!");
+        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
+        if (verisureInstallation != null) {
+            BigDecimal instInst = verisureInstallation.getInstallationInstance();
+            if (instInst != null) {
+                configureInstallationInstance(instInst);
+                String smartPlugUrl = smartPlug.replaceAll("_", "+");
+                String url = BASEURL + SMARTPLUG_COMMAND;
+                String data = "targetDeviceLabel=" + smartPlugUrl + "&targetOn=off";
+                logger.debug("Trying to turn off SmartPlug with URL: " + url + " and data:\n" + data);
+                sendHTTPpost(url, data);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean smartPlugOn(String smartPlug, String installationName) {
+        logger.debug("Sending command to turn on SmartPlug!");
+        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
+        if (verisureInstallation != null) {
+            BigDecimal instInst = verisureInstallation.getInstallationInstance();
+            if (instInst != null) {
+                configureInstallationInstance(instInst);
+                String smartPlugUrl = smartPlug.replaceAll("_", "+");
+                String url = BASEURL + SMARTPLUG_COMMAND;
+                String data = "targetDeviceLabel=" + smartPlugUrl + "&targetOn=on";
+                logger.debug("Trying to turn on SmartPlug with URL: " + url + " and data:\n" + data);
+                sendHTTPpost(url, data);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean unLock(String id, String installationName) {
+        logger.debug("Sending command to unlock!");
+        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
+        if (verisureInstallation != null) {
+            BigDecimal instInst = verisureInstallation.getInstallationInstance();
+            if (instInst != null) {
+                configureInstallationInstance(instInst);
+                String smartLockUrl = id.replaceAll("_", "");
+                String url = BASEURL + SMARTLOCK_LOCK_COMMAND;
+                String data = "code=" + pinCode + "&state=UNLOCKED&deviceLabel=" + smartLockUrl + "&_csrf=" + csrf;
+                logger.debug("Trying to unlock with URL: " + url + " and data: " + data);
+                sendHTTPpost(url, data);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean unregisterDeviceStatusListener(DeviceStatusListener deviceStatusListener) {
+        logger.debug("unregisterDeviceStatusListener for listener {}", deviceStatusListener);
+        return deviceStatusListeners.remove(deviceStatusListener);
+    }
+
+    public boolean registerDeviceStatusListener(DeviceStatusListener deviceStatusListener) {
+        logger.debug("registerDeviceStatusListener for listener {}", deviceStatusListener);
+        return deviceStatusListeners.add(deviceStatusListener);
+    }
+
+    public void dispose() {
+        logger.debug("Should dispose allocated stuff here in session");
+    }
+
+    public @Nullable VerisureThingJSON getVerisureThing(String key) {
+        return verisureThings.get(key);
+    }
+
+    public HashMap<String, org.openhab.binding.verisure.internal.model.VerisureThingJSON> getVerisureThings() {
+        return verisureThings;
+    }
+
+    private boolean areWeLoggedIn() {
+        logger.debug("areWeLoggedIn() - Checking if we are logged in");
+        String urlString = BASEURL + START_SUF;
+        try {
+            ContentResponse response = httpClient.newRequest(urlString).method(HttpMethod.HEAD).send();
+            logger.debug("HTTP HEAD response: " + response.getContentAsString());
+            switch (response.getStatus()) {
+                case 200:
+                    // Redirection
+                    logger.debug("Status code 200. Probably logged in");
+                    if (getHtmlPageType().contains("start-page")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                case 302:
+                    // Redirection
+                    logger.debug("Status code 302. Redirected. Probably not logged in");
+                    return false;
+
+                case 404:
+                    // not found
+                    logger.debug("Status code 404. Probably logged on too");
+                    if (getHtmlPageType().contains("start-page")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                default:
+                    logger.info("Status code {} body {}", response.getStatus(), response.getContentAsString());
+                    break;
+            }
+        } catch (ExecutionException e) {
+            logger.error("ExecutionException: {}", e);
+        } catch (InterruptedException e) {
+            logger.error("InterruptedException: {}", e);
+        } catch (TimeoutException e) {
+            logger.error("TimeoutException: {}", e);
+        }
+        return false;
+    }
+
+    private @Nullable <T> T callJSONRest(String url, Class<T> jsonClass) {
+        T result = null;
+        logger.debug("HTTP GET: " + BASEURL + url);
+        try {
+            ContentResponse httpResult = httpClient.GET(BASEURL + url + "?_=" + System.currentTimeMillis());
+            logger.debug("HTTP Response ({}) Body:{}", httpResult.getStatus(),
+                    httpResult.getContentAsString().replaceAll("\n+", "\n"));
+            if (httpResult.getStatus() == HttpStatus.OK_200) {
+                result = gson.fromJson(httpResult.getContentAsString(), jsonClass);
+            }
+            return result;
+        } catch (ExecutionException e) {
+            logger.error("Caught ExecutionException {} for URL string {}", e, url);
+        } catch (InterruptedException e) {
+            logger.error("Caught InterruptedException {} for URL string {}", e, url);
+        } catch (TimeoutException e) {
+            logger.error("Caught TimeoutException {} for URL string {}", e, url);
+        }
+        return null;
+    }
+
+    @Nullable
+    private String configureInstallationInstance(BigDecimal installationInstance) {
+        logger.debug("Attempting to configure installation instance");
+        try {
+            String url = BASEURL + START_SUF + "?inst=" + installationInstance.toString();
+            logger.debug("Start URL: " + url);
+            ContentResponse resp = httpClient.GET(url);
+            String source = resp.getContentAsString();
+            csrf = getCsrfToken(source);
+            logger.trace(source);
+            logger.debug("Got CSRF: {}", csrf);
+            return source;
+        } catch (ExecutionException e) {
+            logger.error("Caught ExecutionException {}", e);
+        } catch (InterruptedException e) {
+            logger.error("Caught InterruptedException {}", e);
+        } catch (TimeoutException e) {
+            logger.error("Caught TimeoutException {}", e);
+        }
+        return null;
+    }
+
+    private String getCsrfToken(String htmlText) {
+        Document htmlDocument = Jsoup.parse(htmlText);
+        Element nameInput = htmlDocument.select("input[name=_csrf]").first();
+        String csrf = nameInput.attr("value");
+        return csrf;
+    }
+
+    private String getHtmlPageType() {
+        String urlString = BASEURL + START_SUF;
+        try {
+            ContentResponse response = httpClient.GET(urlString + "?_=" + System.currentTimeMillis());
+            logger.trace("HTTP Response ({}) Body:{}", response.getStatus(),
+                    response.getContentAsString().replaceAll("\n+", "\n"));
+            String htmlText = response.getContentAsString();
+            Document htmlDocument = Jsoup.parse(htmlText);
+            Element htmlType = htmlDocument.select("html").first();
+            String pageType = htmlType.attr("class");
+            logger.debug("Page type: {}", pageType);
+            return pageType;
+        } catch (ExecutionException e) {
+            logger.warn("ExecutionException: {}", e);
+        } catch (InterruptedException e) {
+            logger.warn("InterruptedException: {}", e);
+        } catch (TimeoutException e) {
+            logger.warn("TimeoutException: {}", e);
+        }
+        return "";
+    }
+
     private void getInstallations() {
         logger.debug("VerisureSession:handleInstallations");
         if (numberOfInstallations != null) {
@@ -136,6 +528,7 @@ public class VerisureSession {
     }
 
     private void handleInstallation(String htmlText, BigDecimal installationInstance) {
+        // Use Jsoup to parse installation names from html
         Document htmlDocument = Jsoup.parse(htmlText);
         Element div = htmlDocument.select("span.global-navigation-item-no-shrink--text").first();
         String alarmInstallationName = div.text();
@@ -148,6 +541,7 @@ public class VerisureSession {
         } else {
             verisureInstallation.setInstallationInstance(installationInstance);
         }
+        // Installation number 2 if it exists
         Element inst = htmlDocument.select("a.installation-select-link").first();
         if (inst != null) {
             String alarmInstallationName2 = inst.text();
@@ -164,6 +558,52 @@ public class VerisureSession {
                 }
             }
         }
+    }
+
+    private synchronized Boolean logIn() {
+        logger.debug("Attempting to log in to mypages.verisure.com");
+        String url = BASEURL + LOGON_SUF;
+        String source = sendHTTPpost(url, authstring);
+        logger.debug("Login URL: {}", url);
+        if (source == null) {
+            logger.debug("Failed to login");
+            return Boolean.FALSE;
+        } else {
+            logger.debug("Login result: {}" + source);
+            return Boolean.TRUE;
+        }
+    }
+
+    private void notifyListeners(VerisureThingJSON thing) {
+        for (DeviceStatusListener listener : deviceStatusListeners) {
+            listener.onDeviceStateChanged(thing);
+        }
+    }
+
+    @Nullable
+    private String sendHTTPpost(String urlString, @Nullable String data) {
+        if (data != null) {
+            try {
+                org.eclipse.jetty.client.api.Request request = httpClient.newRequest(urlString).method(HttpMethod.POST);
+                request.header("x-csrf-token", csrf).header("Accept", "application/json");
+                request.content(new BytesContentProvider(data.getBytes("UTF-8")),
+                        "application/x-www-form-urlencoded; charset=UTF-8");
+                ContentResponse response = request.send();
+                String content = response.getContentAsString();
+                String contentUTF8 = new String(content.getBytes("UTF-8"), "ISO-8859-1");
+                logger.debug("HTTP Response ({}) Body:{}", response.getStatus(), contentUTF8);
+                return contentUTF8;
+            } catch (ExecutionException e) {
+                logger.warn("Caught ExecutionException {}", e);
+            } catch (UnsupportedEncodingException e) {
+                logger.warn("Caught UnsupportedEncodingException {}", e);
+            } catch (InterruptedException e) {
+                logger.warn("Caught InterruptedException {}", e);
+            } catch (TimeoutException e) {
+                logger.warn("Caught TimeoutException {}", e);
+            }
+        }
+        return null;
     }
 
     private void updateStatus() {
@@ -191,6 +631,28 @@ public class VerisureSession {
                     updateVerisureThings(USERTRACKING_PATH, VerisureUserPresenceJSON[].class, vInst);
                     updateVerisureThings(SMARTPLUG_PATH, VerisureSmartPlugJSON[].class, vInst);
                     updateVerisureBroadbandStatus(ETHERNETSTATUS_PATH, VerisureBroadbandConnectionJSON.class, vInst);
+                }
+            }
+        }
+    }
+
+    private synchronized void updateVerisureBroadbandStatus(String urlString,
+            Class<? extends VerisureThingJSON> jsonClass, VerisureInstallation inst) {
+        VerisureThingJSON thing = callJSONRest(urlString, jsonClass);
+        logger.debug("REST Response ({})", thing);
+        if (thing != null) {
+            BigDecimal instInst = inst.getInstallationInstance();
+            if (instInst != null) {
+                thing.setId(instInst.toString());
+                VerisureThingJSON oldObj = verisureThings.get(thing.getId());
+                if (oldObj == null || !oldObj.equals(thing)) {
+                    thing.setSiteId(inst.getInstallationId());
+                    thing.setSiteName(inst.getInstallationName());
+                    String id = thing.getId();
+                    if (id != null) {
+                        verisureThings.put(id, thing);
+                        notifyListeners(thing);
+                    }
                 }
             }
         }
@@ -276,464 +738,5 @@ public class VerisureSession {
                 }
             }
         }
-    }
-
-    private synchronized void updateVerisureBroadbandStatus(String urlString,
-            Class<? extends VerisureThingJSON> jsonClass, VerisureInstallation inst) {
-        VerisureThingJSON thing = callJSONRest(urlString, jsonClass);
-        logger.debug("REST Response ({})", thing);
-        if (thing != null) {
-            BigDecimal instInst = inst.getInstallationInstance();
-            if (instInst != null) {
-                thing.setId(instInst.toString());
-                VerisureThingJSON oldObj = verisureThings.get(thing.getId());
-                if (oldObj == null || !oldObj.equals(thing)) {
-                    thing.setSiteId(inst.getInstallationId());
-                    thing.setSiteName(inst.getInstallationName());
-                    String id = thing.getId();
-                    if (id != null) {
-                        verisureThings.put(id, thing);
-                        notifyListeners(thing);
-                    }
-                }
-            }
-        }
-    }
-
-    private void notifyListeners(VerisureThingJSON thing) {
-        for (DeviceStatusListener listener : deviceStatusListeners) {
-            listener.onDeviceStateChanged(thing);
-        }
-    }
-
-    public @Nullable VerisureThingJSON getVerisureThing(String key) {
-        return verisureThings.get(key);
-    }
-
-    public HashMap<String, org.openhab.binding.verisure.internal.model.VerisureThingJSON> getVerisureThings() {
-        return verisureThings;
-    }
-
-    private @Nullable <T> T callJSONRest(String url, Class<T> jsonClass) {
-        T result = null;
-        logger.debug("HTTP GET: " + BASEURL + url);
-        try {
-            ContentResponse httpResult = httpClient.GET(BASEURL + url + "?_=" + System.currentTimeMillis());
-            logger.debug("HTTP Response ({}) Body:{}", httpResult.getStatus(),
-                    httpResult.getContentAsString().replaceAll("\n+", "\n"));
-            if (httpResult.getStatus() == HttpStatus.OK_200) {
-                result = gson.fromJson(httpResult.getContentAsString(), jsonClass);
-            }
-            return result;
-        } catch (ExecutionException e) {
-            logger.warn("Caught ExecutionException {} for URL string {}", e, url);
-        } catch (InterruptedException e) {
-            logger.warn("Caught InterruptedException {} for URL string {}", e, url);
-        } catch (TimeoutException e) {
-            logger.warn("Caught TimeoutException {} for URL string {}", e, url);
-        }
-        return null;
-    }
-
-    private synchronized Boolean logIn() {
-        logger.debug("Attempting to log in to mypages.verisure.com");
-        String url = BASEURL + LOGON_SUF;
-        String source = sendHTTPpost(url, authstring);
-        logger.debug("Login URL: {}", url);
-        if (source == null) {
-            logger.debug("Failed to login");
-            return Boolean.FALSE;
-        } else {
-            logger.debug("Login result: {}" + source);
-            return Boolean.TRUE;
-        }
-    }
-
-    @Nullable
-    private String configureInstallationInstance(BigDecimal installationInstance) {
-        logger.debug("Attempting to configure installation instance");
-        try {
-            String url = BASEURL + START_SUF + "?inst=" + installationInstance.toString();
-            logger.debug("Start URL: " + url);
-            ContentResponse resp = httpClient.GET(url);
-            String source = resp.getContentAsString();
-            csrf = getCsrfToken(source);
-            logger.trace(source);
-            logger.debug("Got CSRF: {}", csrf);
-            return source;
-        } catch (ExecutionException e) {
-            logger.warn("Caught ExecutionException {}", e);
-        } catch (InterruptedException e) {
-            logger.warn("Caught InterruptedException {}", e);
-        } catch (TimeoutException e) {
-            logger.warn("Caught TimeoutException {}", e);
-        }
-        return null;
-    }
-
-    @Nullable
-    private String sendHTTPpost(String urlString, @Nullable String data) {
-        if (data != null) {
-            try {
-                org.eclipse.jetty.client.api.Request request = httpClient.newRequest(urlString).method(HttpMethod.POST);
-                request.header("x-csrf-token", csrf).header("Accept", "application/json");
-                request.content(new BytesContentProvider(data.getBytes("UTF-8")),
-                        "application/x-www-form-urlencoded; charset=UTF-8");
-                ContentResponse response = request.send();
-                String content = response.getContentAsString();
-                String contentUTF8 = new String(content.getBytes("UTF-8"), "ISO-8859-1");
-                logger.debug("HTTP Response ({}) Body:{}", response.getStatus(), contentUTF8);
-                return contentUTF8;
-            } catch (ExecutionException e) {
-                logger.warn("Caught ExecutionException {}", e);
-            } catch (UnsupportedEncodingException e) {
-                logger.warn("Caught UnsupportedEncodingException {}", e);
-            } catch (InterruptedException e) {
-                logger.warn("Caught InterruptedException {}", e);
-            } catch (TimeoutException e) {
-                logger.warn("Caught TimeoutException {}", e);
-            }
-        }
-        return null;
-    }
-
-    private String getHtmlPageType() {
-        String urlString = BASEURL + START_SUF;
-        try {
-            ContentResponse response = httpClient.GET(urlString + "?_=" + System.currentTimeMillis());
-            logger.trace("HTTP Response ({}) Body:{}", response.getStatus(),
-                    response.getContentAsString().replaceAll("\n+", "\n"));
-            String htmlText = response.getContentAsString();
-            Document htmlDocument = Jsoup.parse(htmlText);
-            Element htmlType = htmlDocument.select("html").first();
-            String pageType = htmlType.attr("class");
-            logger.debug("Page type: {}", pageType);
-            return pageType;
-        } catch (ExecutionException e) {
-            logger.warn("ExecutionException: {}", e);
-        } catch (InterruptedException e) {
-            logger.warn("InterruptedException: {}", e);
-        } catch (TimeoutException e) {
-            logger.warn("TimeoutException: {}", e);
-        }
-        return "";
-    }
-
-    private boolean areWeLoggedIn() {
-        logger.debug("areWeLoggedIn() - Checking if we are logged in");
-        String urlString = BASEURL + START_SUF;
-        try {
-            ContentResponse response = httpClient.newRequest(urlString).method(HttpMethod.HEAD).send();
-            logger.debug("HTTP HEAD response: " + response.getContentAsString());
-            switch (response.getStatus()) {
-                case 200:
-                    // Redirection
-                    logger.debug("Status code 200. Probably logged in");
-                    if (getHtmlPageType().contains("start-page")) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                case 302:
-                    // Redirection
-                    logger.debug("Status code 302. Redirected. Probably not logged in");
-                    return false;
-
-                case 404:
-                    // not found
-                    logger.debug("Status code 404. Probably logged on too");
-                    if (getHtmlPageType().contains("start-page")) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                default:
-                    logger.info("Status code {} body {}", response.getStatus(), response.getContentAsString());
-                    break;
-            }
-        } catch (ExecutionException e) {
-            logger.warn("ExecutionException: {}", e);
-        } catch (InterruptedException e) {
-            logger.warn("InterruptedException: {}", e);
-        } catch (TimeoutException e) {
-            logger.warn("TimeoutException: {}", e);
-        }
-        return false;
-    }
-
-    public boolean refresh() {
-        // Try to refresh 3 times
-        for (int i = 0; i < 3; i++) {
-            if (!areWeLoggedOut && areWeLoggedIn()) {
-                updateStatus();
-                return true;
-            } else {
-                try {
-                    Thread.sleep(2000);
-                    Boolean success = logIn();
-                    if (success) {
-                        areWeLoggedOut = false;
-                    } else {
-                        areWeLoggedOut = true;
-                    }
-                } catch (InterruptedException e) {
-                    logger.warn("InterruptedException waiting for new login {}", e);
-                }
-            }
-        }
-        return false;
-    }
-
-    public void dispose() {
-        logger.debug("Should dispose allocated stuff here in session");
-    }
-
-    private String getCsrfToken(String htmlText) {
-        Document htmlDocument = Jsoup.parse(htmlText);
-        Element nameInput = htmlDocument.select("input[name=_csrf]").first();
-        String csrf = nameInput.attr("value");
-        return csrf;
-    }
-
-    public boolean disarmAlarm(String installationName) {
-        logger.debug("Sending command to disarm the alarm! Installation name: " + installationName);
-        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
-        if (verisureInstallation != null) {
-            BigDecimal instInst = verisureInstallation.getInstallationInstance();
-            if (instInst != null) {
-                configureInstallationInstance(instInst);
-                String url = BASEURL + ALARM_COMMAND;
-                String data = "code=" + pinCode + "&state=DISARMED" + "&_csrf=" + csrf;
-                logger.debug("Trying to disarmAlarm with URL: " + url + " and data: " + data);
-                sendHTTPpost(url, data);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean armHomeAlarm(String installationName) {
-        logger.debug("Sending command to arm_home the alarm! Installation name:" + installationName);
-        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
-        if (verisureInstallation != null) {
-            BigDecimal instInst = verisureInstallation.getInstallationInstance();
-            if (instInst != null) {
-                configureInstallationInstance(instInst);
-                String url = BASEURL + ALARM_COMMAND;
-                String data = "code=" + pinCode + "&state=ARMED_HOME" + "&_csrf=" + csrf;
-                logger.debug("Trying to armHomeAlarm with URL: " + url + " and data: " + data);
-                sendHTTPpost(url, data);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean armAwayAlarm(String installationName) {
-        logger.debug("Sending command to arm_away the alarm! Installation name:" + installationName);
-        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
-        if (verisureInstallation != null) {
-            BigDecimal instInst = verisureInstallation.getInstallationInstance();
-            if (instInst != null) {
-                configureInstallationInstance(instInst);
-                String url = BASEURL + ALARM_COMMAND;
-                String data = "code=" + pinCode + "&state=ARMED_AWAY" + "&_csrf=" + csrf;
-                logger.debug("Trying to armAwayAlarm with URL: " + url + " and data: " + data);
-                sendHTTPpost(url, data);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean lock(String id, String installationName) {
-        logger.debug("Sending command to lock!");
-        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
-        if (verisureInstallation != null) {
-            BigDecimal instInst = verisureInstallation.getInstallationInstance();
-            if (instInst != null) {
-                configureInstallationInstance(instInst);
-                String smartLockUrl = id.replaceAll("_", "");
-                String url = BASEURL + SMARTLOCK_LOCK_COMMAND;
-                String data = "code=" + pinCode + "&state=LOCKED&deviceLabel=" + smartLockUrl + "&_csrf=" + csrf;
-                logger.debug("Trying to lock with URL: " + url + " and data: " + data);
-                sendHTTPpost(url, data);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean unLock(String id, String installationName) {
-        logger.debug("Sending command to unlock!");
-        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
-        if (verisureInstallation != null) {
-            BigDecimal instInst = verisureInstallation.getInstallationInstance();
-            if (instInst != null) {
-                configureInstallationInstance(instInst);
-                String smartLockUrl = id.replaceAll("_", "");
-                String url = BASEURL + SMARTLOCK_LOCK_COMMAND;
-                String data = "code=" + pinCode + "&state=UNLOCKED&deviceLabel=" + smartLockUrl + "&_csrf=" + csrf;
-                logger.debug("Trying to unlock with URL: " + url + " and data: " + data);
-                sendHTTPpost(url, data);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean smartPlugOn(String smartPlug, String installationName) {
-        logger.debug("Sending command to turn on SmartPlug!");
-        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
-        if (verisureInstallation != null) {
-            BigDecimal instInst = verisureInstallation.getInstallationInstance();
-            if (instInst != null) {
-                configureInstallationInstance(instInst);
-                String smartPlugUrl = smartPlug.replaceAll("_", "+");
-                String url = BASEURL + SMARTPLUG_COMMAND;
-                String data = "targetDeviceLabel=" + smartPlugUrl + "&targetOn=on";
-                logger.debug("Trying to turn on SmartPlug with URL: " + url + " and data:\n" + data);
-                sendHTTPpost(url, data);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean smartPlugOff(String smartPlug, String installationName) {
-        logger.debug("Sending command to off SmartPlug!");
-        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
-        if (verisureInstallation != null) {
-            BigDecimal instInst = verisureInstallation.getInstallationInstance();
-            if (instInst != null) {
-                configureInstallationInstance(instInst);
-                String smartPlugUrl = smartPlug.replaceAll("_", "+");
-                String url = BASEURL + SMARTPLUG_COMMAND;
-                String data = "targetDeviceLabel=" + smartPlugUrl + "&targetOn=off";
-                logger.debug("Trying to turn off SmartPlug with URL: " + url + " and data:\n" + data);
-                sendHTTPpost(url, data);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean autoRelockOn(@Nullable String id, @Nullable String installationName, @Nullable String location,
-            @Nullable DoorLockVolumeSettings lockSettings) {
-        logger.debug("Sending command to turn on Auto Relock!");
-        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
-        if (verisureInstallation != null) {
-            try {
-                BigDecimal instInst = verisureInstallation.getInstallationInstance();
-                if (instInst != null && id != null && lockSettings != null) {
-                    configureInstallationInstance(instInst);
-                    String deviceLabelUrl = id.replaceAll("_", "+");
-                    String locationUTF8 = URLEncoder.encode(location, "utf-8");
-                    String url = BASEURL + SMARTLOCK_SET_COMMAND;
-                    String data = "location=" + locationUTF8 + "&autoRelockEnabled=true&_autoRelockEnabled=on"
-                            + "&deviceLabel=" + deviceLabelUrl + "&doorLockVolumeSettings.volume="
-                            + lockSettings.getVolume() + "&doorLockVolumeSettings.voiceLevel="
-                            + lockSettings.getVoiceLevel() + "&_csrf=" + csrf;
-                    logger.debug("Trying to turn on Auto Relock with URL: " + url + " and data:\n" + data);
-                    sendHTTPpost(url, data);
-                    return true;
-                }
-            } catch (UnsupportedEncodingException e) {
-                logger.error("Failed in autoRelockOn", e);
-            }
-        }
-        return false;
-    }
-
-    public boolean autoRelockOff(@Nullable String id, @Nullable String installationName, @Nullable String location,
-            @Nullable DoorLockVolumeSettings lockSettings) {
-        logger.debug("Sending command to turn off Auto Relock!");
-        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
-        if (verisureInstallation != null) {
-            try {
-                BigDecimal instInst = verisureInstallation.getInstallationInstance();
-                if (instInst != null && id != null && lockSettings != null) {
-                    configureInstallationInstance(instInst);
-                    String deviceLabelUrl = id.replaceAll("_", "+");
-                    String locationUTF8 = URLEncoder.encode(location, "utf-8");
-                    String url = BASEURL + SMARTLOCK_SET_COMMAND;
-                    String data = "location=" + locationUTF8 + "&_autoRelockEnabled=on" + "&deviceLabel="
-                            + deviceLabelUrl + "&doorLockVolumeSettings.volume=" + lockSettings.getVolume()
-                            + "&doorLockVolumeSettings.voiceLevel=" + lockSettings.getVoiceLevel() + "&_csrf=" + csrf;
-                    logger.debug("Trying to turn on Auto Relock with URL: " + url + " and data:\n" + data);
-                    sendHTTPpost(url, data);
-                    return true;
-                }
-            } catch (UnsupportedEncodingException e) {
-                logger.error("Failed in autoRelockOff", e);
-            }
-        }
-        return false;
-    }
-
-    public boolean setSmartLockVolume(@Nullable String id, @Nullable String installationName, @Nullable String location,
-            @Nullable Boolean autoRelockEnabled, @Nullable DoorLockVolumeSettings lockSettings,
-            @Nullable String volumeSetting) {
-        logger.debug("Sending command to set SmartLock volume!");
-        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
-        if (verisureInstallation != null) {
-            BigDecimal instInst = verisureInstallation.getInstallationInstance();
-            if (instInst != null && id != null && lockSettings != null) {
-                configureInstallationInstance(instInst);
-                String autoRelockStatus;
-                if (autoRelockEnabled != null && autoRelockEnabled) {
-                    autoRelockStatus = "&autoRelockEnabled=true&_autoRelockEnabled=on";
-                } else {
-                    autoRelockStatus = "&_autoRelockEnabled=on";
-                }
-                String deviceLabelUrl = id.replaceAll("_", "+");
-                String url = BASEURL + SMARTLOCK_SET_COMMAND;
-                String data = "location=" + location + autoRelockStatus + "&deviceLabel=" + deviceLabelUrl
-                        + "&doorLockVolumeSettings.volume=" + volumeSetting + "&doorLockVolumeSettings.voiceLevel="
-                        + lockSettings.getVoiceLevel() + "&_csrf=" + csrf;
-                logger.debug("Trying to set SmartLock volume with URL: " + url + " and data:\n" + data);
-                sendHTTPpost(url, data);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean setSmartLockVoiceLevel(@Nullable String id, @Nullable String installationName,
-            @Nullable String location, @Nullable Boolean autoRelockEnabled,
-            @Nullable DoorLockVolumeSettings lockSettings, @Nullable String voiceLevelSetting) {
-        logger.debug("Sending command to set SmartLock voice level!");
-        VerisureInstallation verisureInstallation = verisureInstallations.get(installationName);
-        if (verisureInstallation != null) {
-            BigDecimal instInst = verisureInstallation.getInstallationInstance();
-            if (instInst != null && id != null && lockSettings != null) {
-                configureInstallationInstance(instInst);
-                String autoRelockStatus;
-                if (autoRelockEnabled != null && autoRelockEnabled) {
-                    autoRelockStatus = "&autoRelockEnabled=true&_autoRelockEnabled=on";
-                } else {
-                    autoRelockStatus = "&_autoRelockEnabled=on";
-                }
-                String deviceLabelUrl = id.replaceAll("_", "+");
-                String url = BASEURL + SMARTLOCK_SET_COMMAND;
-                String data = "location=" + location + autoRelockStatus + "&deviceLabel=" + deviceLabelUrl
-                        + "&doorLockVolumeSettings.volume=" + lockSettings.getVolume()
-                        + "&doorLockVolumeSettings.voiceLevel=" + voiceLevelSetting + "&_csrf=" + csrf;
-                logger.debug("Trying to set SmartLock voice level with URL: " + url + " and data:\n" + data);
-                sendHTTPpost(url, data);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean registerDeviceStatusListener(DeviceStatusListener deviceStatusListener) {
-        logger.debug("registerDeviceStatusListener for listener {}", deviceStatusListener);
-        return deviceStatusListeners.add(deviceStatusListener);
-    }
-
-    public boolean unregisterDeviceStatusListener(DeviceStatusListener deviceStatusListener) {
-        logger.debug("unregisterDeviceStatusListener for listener {}", deviceStatusListener);
-        return deviceStatusListeners.remove(deviceStatusListener);
     }
 }
