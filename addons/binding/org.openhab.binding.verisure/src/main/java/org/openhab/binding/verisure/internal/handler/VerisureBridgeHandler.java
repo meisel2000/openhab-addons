@@ -10,13 +10,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.verisure.handler;
+package org.openhab.binding.verisure.internal.handler;
 
-import static org.openhab.binding.verisure.VerisureBindingConstants.*;
+import static org.openhab.binding.verisure.internal.VerisureBindingConstants.*;
 
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -77,7 +78,7 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
     ReentrantLock immediateRefreshJobLock = new ReentrantLock();
 
     private @Nullable VerisureSession session;
-    private @Nullable HttpClient httpClient;
+    private HttpClient httpClient;
 
     Runnable pollingRunnable = new Runnable() {
         @Override
@@ -130,26 +131,23 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
     public void initialize() {
         logger.debug("Initializing Verisure Binding");
         VerisureBridgeConfiguration config = getConfigAs(VerisureBridgeConfiguration.class);
-
         this.refresh = config.refresh;
         this.pinCode = config.pin;
         this.numberOfInstallations = config.numberOfInstallations;
-
         if (config.username == null || config.password == null) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                    "Must configure username and password");
+                    "Configuration of username and password is mandatory");
         } else {
             authstring = "j_username=" + config.username + "&j_password=" + config.password;
             try {
-                if (session != null) {
-                    session.initialize(authstring, pinCode, numberOfInstallations);
-                    startAutomaticRefresh();
+                if (session == null) {
+                    // Configuration change
+                    session = new VerisureSession(this.httpClient);
                 }
-            } catch (Error e) {
-                logger.error("Failed", e);
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
+                session.initialize(authstring, pinCode, numberOfInstallations);
+                startAutomaticRefresh();
             } catch (Exception e) {
-                logger.error("Failed", e);
+                logger.error("Failed to initialize!", e);
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
             }
         }
@@ -177,6 +175,8 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
                     }
                 }
             }
+        } catch (RejectedExecutionException e) {
+            logger.error("Immediate refresh job cannot be scheduled!");
         } finally {
             this.immediateRefreshJobLock.unlock();
         }
@@ -185,9 +185,15 @@ public class VerisureBridgeHandler extends BaseBridgeHandler {
     private void startAutomaticRefresh() {
         logger.debug("Start automatic refresh {}", refreshJob);
         if (refreshJob == null || (refreshJob != null && refreshJob.isCancelled())) {
-            refreshJob = scheduler.scheduleWithFixedDelay(pollingRunnable, REFRESH_DELAY, refresh.intValue(),
-                    TimeUnit.SECONDS);
-            logger.debug("Scheduling at fixed delay refreshjob {}", refreshJob);
+            try {
+                refreshJob = scheduler.scheduleWithFixedDelay(pollingRunnable, REFRESH_DELAY, refresh.intValue(),
+                        TimeUnit.SECONDS);
+                logger.debug("Scheduling at fixed delay refreshjob {}", refreshJob);
+            } catch (IllegalArgumentException e) {
+                logger.error("Refresh time value is invalid! Please change the refresh time configuration!", e);
+            } catch (RejectedExecutionException e) {
+                logger.error("Automatic refresh job cannot be started!");
+            }
         }
     }
 

@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.verisure.internal;
 
+import org.openhab.binding.verisure.internal.model.VerisureThingJSON;
+
 /**
  * The {@link DeviceStatusListener} is notified when a device status has changed
  * or a device has been removed or added.

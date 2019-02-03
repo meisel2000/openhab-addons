@@ -14,7 +14,7 @@ package org.openhab.binding.verisure.internal;
 
 import java.math.BigDecimal;
 
-import org.openhab.binding.verisure.handler.VerisureBridgeHandler;
+import org.openhab.binding.verisure.internal.handler.VerisureBridgeHandler;
 
 /**
  * Configuration class for {@link VerisureBridgeHandler} bridge used to connect to the

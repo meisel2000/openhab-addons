@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.verisure.internal.discovery;
 
-import static org.openhab.binding.verisure.VerisureBindingConstants.*;
+import static org.openhab.binding.verisure.internal.VerisureBindingConstants.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,16 +25,16 @@ import org.eclipse.smarthome.config.discovery.DiscoveryResult;
 import org.eclipse.smarthome.config.discovery.DiscoveryResultBuilder;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
-import org.openhab.binding.verisure.handler.VerisureBridgeHandler;
-import org.openhab.binding.verisure.handler.VerisureThingHandler;
-import org.openhab.binding.verisure.internal.VerisureAlarmJSON;
-import org.openhab.binding.verisure.internal.VerisureBroadbandConnectionJSON;
-import org.openhab.binding.verisure.internal.VerisureClimateBaseJSON;
-import org.openhab.binding.verisure.internal.VerisureDoorWindowJSON;
 import org.openhab.binding.verisure.internal.VerisureSession;
-import org.openhab.binding.verisure.internal.VerisureSmartPlugJSON;
-import org.openhab.binding.verisure.internal.VerisureThingJSON;
-import org.openhab.binding.verisure.internal.VerisureUserPresenceJSON;
+import org.openhab.binding.verisure.internal.handler.VerisureBridgeHandler;
+import org.openhab.binding.verisure.internal.handler.VerisureThingHandler;
+import org.openhab.binding.verisure.internal.model.VerisureAlarmJSON;
+import org.openhab.binding.verisure.internal.model.VerisureBroadbandConnectionJSON;
+import org.openhab.binding.verisure.internal.model.VerisureClimateBaseJSON;
+import org.openhab.binding.verisure.internal.model.VerisureDoorWindowJSON;
+import org.openhab.binding.verisure.internal.model.VerisureSmartPlugJSON;
+import org.openhab.binding.verisure.internal.model.VerisureThingJSON;
+import org.openhab.binding.verisure.internal.model.VerisureUserPresenceJSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,9 +73,9 @@ public class VerisureThingDiscoveryService extends AbstractDiscoveryService {
         if (verisureBridgeHandler != null) {
             VerisureSession session = verisureBridgeHandler.getSession();
             if (session != null) {
-                HashMap<String, @Nullable VerisureThingJSON> verisureThings = session.getVerisureThings();
+                HashMap<String, org.openhab.binding.verisure.internal.model.VerisureThingJSON> verisureThings = session.getVerisureThings();
 
-                for (Map.Entry<String, @Nullable VerisureThingJSON> entry : verisureThings.entrySet()) {
+                for (Map.Entry<String, org.openhab.binding.verisure.internal.model.VerisureThingJSON> entry : verisureThings.entrySet()) {
                     VerisureThingJSON thing = entry.getValue();
                     if (thing != null) {
                         logger.info(thing.toString());

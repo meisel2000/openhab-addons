@@ -10,9 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.verisure.handler;
+package org.openhab.binding.verisure.internal.handler;
 
-import static org.openhab.binding.verisure.VerisureBindingConstants.*;
+import static org.openhab.binding.verisure.internal.VerisureBindingConstants.*;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -28,7 +28,6 @@ import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
-import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.ThingStatusInfo;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
@@ -36,16 +35,16 @@ import org.eclipse.smarthome.core.thing.binding.BridgeHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.openhab.binding.verisure.internal.DeviceStatusListener;
-import org.openhab.binding.verisure.internal.VerisureAlarmJSON;
-import org.openhab.binding.verisure.internal.VerisureBroadbandConnectionJSON;
-import org.openhab.binding.verisure.internal.VerisureClimateBaseJSON;
-import org.openhab.binding.verisure.internal.VerisureDoorWindowJSON;
 import org.openhab.binding.verisure.internal.VerisureSession;
-import org.openhab.binding.verisure.internal.VerisureSmartLockJSON;
-import org.openhab.binding.verisure.internal.VerisureSmartLockJSON.DoorLockVolumeSettings;
-import org.openhab.binding.verisure.internal.VerisureSmartPlugJSON;
-import org.openhab.binding.verisure.internal.VerisureThingJSON;
-import org.openhab.binding.verisure.internal.VerisureUserPresenceJSON;
+import org.openhab.binding.verisure.internal.model.VerisureAlarmJSON;
+import org.openhab.binding.verisure.internal.model.VerisureBroadbandConnectionJSON;
+import org.openhab.binding.verisure.internal.model.VerisureClimateBaseJSON;
+import org.openhab.binding.verisure.internal.model.VerisureDoorWindowJSON;
+import org.openhab.binding.verisure.internal.model.VerisureSmartLockJSON;
+import org.openhab.binding.verisure.internal.model.VerisureSmartPlugJSON;
+import org.openhab.binding.verisure.internal.model.VerisureThingJSON;
+import org.openhab.binding.verisure.internal.model.VerisureUserPresenceJSON;
+import org.openhab.binding.verisure.internal.model.VerisureSmartLockJSON.DoorLockVolumeSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -333,7 +332,6 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
                 session = vbh.getSession();
                 if (session != null && this.id != null) {
                     session.unregisterDeviceStatusListener(this);
-                    // vbh.registerObjectStatusListener(this);
                 }
             }
         }
@@ -351,7 +349,6 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
                     if (session != null && this.id != null) {
                         update(session.getVerisureThing(this.id));
                         session.registerDeviceStatusListener(this);
-                        // vbh.registerObjectStatusListener(this);
                     }
                 }
             }
@@ -426,7 +423,6 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
             DecimalType number = new DecimalType(val);
             updateState(cuid, number);
         }
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_HUMIDITY);
         String humidity = status.getHumidity();
         if (humidity != null && humidity.length() > 1) {
@@ -434,69 +430,56 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
             DecimalType hnumber = new DecimalType(val);
             updateState(cuid, hnumber);
         }
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_LASTUPDATE);
         updateState(cuid, new StringType(status.getTimestamp()));
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_LOCATION);
         updateState(cuid, new StringType(status.getLocation()));
-
         BigDecimal siteId = status.getSiteId();
         if (siteId != null) {
             cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_ID);
             DecimalType instId = new DecimalType(siteId);
             updateState(cuid, instId);
         }
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_NAME);
         StringType instName = new StringType(status.getSiteName());
         updateState(cuid, instName);
     }
 
     private void updateAlarmState(VerisureAlarmJSON status) {
-        try {
-            ChannelUID cuid = new ChannelUID(getThing().getUID(), CHANNEL_STATUS);
-            String alarmStatus = status.getStatus();
-            if (alarmStatus != null) {
-                updateState(cuid, new StringType(alarmStatus));
-
-                cuid = new ChannelUID(getThing().getUID(), CHANNEL_NUMERIC_STATUS);
-                DecimalType val = new DecimalType(0);
-
-                if (alarmStatus.equals("unarmed")) {
-                    val = new DecimalType(0);
-                } else if (alarmStatus.equals("armedhome")) {
-                    val = new DecimalType(1);
-                } else if (alarmStatus.equals("armedaway")) {
-                    val = new DecimalType(2);
-                }
-                updateState(cuid, val);
-
-                cuid = new ChannelUID(getThing().getUID(), CHANNEL_CHANGED_BY_USER);
-                String changedByUser = status.getName();
-                updateState(cuid, new StringType(changedByUser));
-
-                cuid = new ChannelUID(getThing().getUID(), CHANNEL_TIMESTAMP);
-                String alarmTimeStamp = status.getDate();
-                updateState(cuid, new StringType(alarmTimeStamp));
-
-                cuid = new ChannelUID(getThing().getUID(), CHANNEL_ALARM_STATUS);
-                String label = status.getLabel();
-                updateState(cuid, new StringType(label));
-
-                cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_ID);
-                BigDecimal siteId = status.getSiteId();
-                if (siteId != null) {
-                    DecimalType instId = new DecimalType(siteId);
-                    updateState(cuid, instId);
-                }
-
-                cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_NAME);
-                StringType instName = new StringType(status.getSiteName());
-                updateState(cuid, instName);
+        ChannelUID cuid = new ChannelUID(getThing().getUID(), CHANNEL_STATUS);
+        String alarmStatus = status.getStatus();
+        if (alarmStatus != null) {
+            updateState(cuid, new StringType(alarmStatus));
+            cuid = new ChannelUID(getThing().getUID(), CHANNEL_NUMERIC_STATUS);
+            DecimalType val = new DecimalType(0);
+            if (alarmStatus.equals("unarmed")) {
+                val = new DecimalType(0);
+            } else if (alarmStatus.equals("armedhome")) {
+                val = new DecimalType(1);
+            } else if (alarmStatus.equals("armedaway")) {
+                val = new DecimalType(2);
+            } else {
+                logger.error("Unknown alarmstatus: {}", alarmStatus);
             }
-        } catch (Exception e) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
+            updateState(cuid, val);
+            cuid = new ChannelUID(getThing().getUID(), CHANNEL_CHANGED_BY_USER);
+            String changedByUser = status.getName();
+            updateState(cuid, new StringType(changedByUser));
+            cuid = new ChannelUID(getThing().getUID(), CHANNEL_TIMESTAMP);
+            String alarmTimeStamp = status.getDate();
+            updateState(cuid, new StringType(alarmTimeStamp));
+            cuid = new ChannelUID(getThing().getUID(), CHANNEL_ALARM_STATUS);
+            String label = status.getLabel();
+            updateState(cuid, new StringType(label));
+            cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_ID);
+            BigDecimal siteId = status.getSiteId();
+            if (siteId != null) {
+                DecimalType instId = new DecimalType(siteId);
+                updateState(cuid, instId);
+            }
+            cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_NAME);
+            StringType instName = new StringType(status.getSiteName());
+            updateState(cuid, instName);
         }
     }
 
@@ -505,7 +488,6 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
         String smartLockStatus = status.getStatus();
         if (smartLockStatus != null) {
             updateState(cuid, new StringType(smartLockStatus));
-
             cuid = new ChannelUID(getThing().getUID(), CHANNEL_SET_SMARTLOCK_STATUS);
             if ("locked".equals(smartLockStatus)) {
                 updateState(cuid, OnOffType.ON);
@@ -515,7 +497,6 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
                 // Schedule another refresh.
                 this.scheduleImmediateRefresh();
             }
-
             cuid = new ChannelUID(getThing().getUID(), CHANNEL_NUMERIC_STATUS);
             DecimalType val = new DecimalType(0);
             if (smartLockStatus.equals("locked")) {
@@ -524,22 +505,17 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
                 val = new DecimalType(0);
             }
             updateState(cuid, val);
-
             cuid = new ChannelUID(getThing().getUID(), CHANNEL_SMARTLOCK_STATUS);
             smartLockStatus = status.getLabel();
             updateState(cuid, new StringType(smartLockStatus));
-
             cuid = new ChannelUID(getThing().getUID(), CHANNEL_CHANGED_BY_USER);
             String changedByUser = status.getName();
             updateState(cuid, new StringType(changedByUser));
-
             cuid = new ChannelUID(getThing().getUID(), CHANNEL_TIMESTAMP);
             String alarmTimeStamp = status.getDate();
             updateState(cuid, new StringType(alarmTimeStamp));
-
             cuid = new ChannelUID(getThing().getUID(), CHANNEL_LOCATION);
             updateState(cuid, new StringType(status.getLocation()));
-
             cuid = new ChannelUID(getThing().getUID(), CHANNEL_SET_AUTO_RELOCK);
             Boolean autoRelock = status.getAutoRelockEnabled();
             if (autoRelock != null && autoRelock) {
@@ -547,13 +523,11 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
             } else {
                 updateState(cuid, OnOffType.OFF);
             }
-
             cuid = new ChannelUID(getThing().getUID(), CHANNEL_AUTO_RELOCK_ENABLED);
             Boolean autoRelockEnabled = status.getAutoRelockEnabled();
             if (autoRelockEnabled != null) {
                 updateState(cuid, new StringType(autoRelockEnabled.toString()));
             }
-
             DoorLockVolumeSettings dlvs = status.getDoorLockVolumeSettings();
             if (dlvs != null) {
                 cuid = new ChannelUID(getThing().getUID(), CHANNEL_SMARTLOCK_VOLUME);
@@ -564,14 +538,12 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
                 StringType voiceLevel = new StringType(dlvs.getVoiceLevel());
                 updateState(cuid, voiceLevel);
             }
-
             cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_ID);
             BigDecimal siteId = status.getSiteId();
             if (siteId != null) {
                 DecimalType instId = new DecimalType(siteId);
                 updateState(cuid, instId);
             }
-
             cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_NAME);
             StringType instName = new StringType(status.getSiteName());
             updateState(cuid, instName);
@@ -580,22 +552,19 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
 
     private void updateDoorWindowState(VerisureDoorWindowJSON status) {
         ChannelUID cuid = new ChannelUID(getThing().getUID(), CHANNEL_STATE);
-        if (status.getState().equals("OPEN")) {
+        if (status.getState() != null && status.getState().equals("OPEN")) {
             updateState(cuid, OpenClosedType.OPEN);
         } else {
             updateState(cuid, OpenClosedType.CLOSED);
         }
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_LOCATION);
         updateState(cuid, new StringType(status.getArea()));
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_ID);
         BigDecimal siteId = status.getSiteId();
         if (siteId != null) {
             DecimalType instId = new DecimalType(siteId);
             updateState(cuid, instId);
         }
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_NAME);
         StringType instName = new StringType(status.getSiteName());
         updateState(cuid, instName);
@@ -605,7 +574,6 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
         ChannelUID cuid = new ChannelUID(getThing().getUID(), CHANNEL_STATUS);
         String smartPlugStatus = status.getStatus();
         updateState(cuid, new StringType(smartPlugStatus));
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_SMARTPLUG_STATUS);
         if ("on".equals(smartPlugStatus)) {
             updateState(cuid, OnOffType.ON);
@@ -614,24 +582,21 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
         } else if ("pending".equals(smartPlugStatus)) {
             // Schedule another refresh.
             this.scheduleImmediateRefresh();
+        } else {
+            logger.error("Unknown SmartPLug status: {}", smartPlugStatus);
         }
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_SMARTPLUG_STATUS);
         updateState(cuid, new StringType(status.getStatusText()));
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_LOCATION);
         updateState(cuid, new StringType(status.getLocation()));
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_HAZARDOUS);
         updateState(cuid, new StringType(status.getHazardous().toString()));
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_ID);
         BigDecimal siteId = status.getSiteId();
         if (siteId != null) {
             DecimalType instId = new DecimalType(siteId);
             updateState(cuid, instId);
         }
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_NAME);
         StringType instName = new StringType(status.getSiteName());
         updateState(cuid, instName);
@@ -640,20 +605,16 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
     private void updateUserPresenceState(VerisureUserPresenceJSON status) {
         ChannelUID cuid = new ChannelUID(getThing().getUID(), CHANNEL_USER_LOCATION_NAME);
         updateState(cuid, new StringType(status.getLocation()));
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_WEBACCOUNT);
         updateState(cuid, new StringType(status.getWebAccount()));
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_USER_LOCATION_STATUS);
         updateState(cuid, new StringType(status.getUserLocationStatus()));
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_ID);
         BigDecimal siteId = status.getSiteId();
         if (siteId != null) {
             DecimalType instId = new DecimalType(siteId);
             updateState(cuid, instId);
         }
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_NAME);
         StringType instName = new StringType(status.getSiteName());
         updateState(cuid, instName);
@@ -662,23 +623,19 @@ public class VerisureThingHandler extends BaseThingHandler implements DeviceStat
     private void updateBroadbandConnection(VerisureBroadbandConnectionJSON status) {
         ChannelUID cuid = new ChannelUID(getThing().getUID(), CHANNEL_TIMESTAMP);
         updateState(cuid, new StringType(status.getDate()));
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_HAS_WIFI);
         Boolean hasWiFi = status.hasWiFi();
         if (hasWiFi != null) {
             updateState(cuid, new StringType(hasWiFi.toString()));
         }
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_STATUS);
         updateState(cuid, new StringType(status.getStatus()));
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_ID);
         BigDecimal siteId = status.getSiteId();
         if (siteId != null) {
             DecimalType instId = new DecimalType(siteId);
             updateState(cuid, instId);
         }
-
         cuid = new ChannelUID(getThing().getUID(), CHANNEL_SITE_INSTALLATION_NAME);
         StringType instName = new StringType(status.getSiteName());
         updateState(cuid, instName);
