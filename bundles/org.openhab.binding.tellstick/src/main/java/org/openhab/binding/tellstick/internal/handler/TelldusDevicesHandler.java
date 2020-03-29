@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2020 Contributors to the openHAB project
+ * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -21,8 +21,7 @@ import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.library.types.DateTimeType;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.PercentType;
-import org.eclipse.smarthome.core.library.types.QuantityType;
-import org.eclipse.smarthome.core.library.unit.SIUnits;
+import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -205,13 +204,11 @@ public class TelldusDevicesHandler extends BaseThingHandler implements DeviceSta
 
     private Device getDevice(TelldusBridgeHandler tellHandler, String deviceId) {
         Device dev = null;
-        if (deviceId != null) {
-            if (isSensor()) {
-                dev = tellHandler.getSensor(deviceId);
-            } else {
-                dev = tellHandler.getDevice(deviceId);
-                updateDeviceState(dev);
-            }
+        if (deviceId != null && isSensor()) {
+            dev = tellHandler.getSensor(deviceId);
+        } else if (deviceId != null) {
+            dev = tellHandler.getDevice(deviceId);
+            updateDeviceState(dev);
         }
         return dev;
     }
