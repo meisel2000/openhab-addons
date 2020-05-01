@@ -15,6 +15,9 @@ package org.openhab.binding.vwweconnect.internal.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -40,7 +43,28 @@ public class EManager {
         return eManager;
     }
 
-    @NonNullByDefault
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this).append("errorCode", errorCode).append("eManager", eManager).toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(eManager).append(errorCode).toHashCode();
+    }
+
+    @Override
+    public boolean equals(@Nullable Object other) {
+        if (other == this) {
+            return true;
+        }
+        if ((other instanceof EManager) == false) {
+            return false;
+        }
+        EManager rhs = ((EManager) other);
+        return new EqualsBuilder().append(eManager, rhs.eManager).append(errorCode, rhs.errorCode).isEquals();
+    }
+
     public class EManagerModel {
         private Rbc rbc = new Rbc();
         private Rpc rpc = new Rpc();
@@ -68,7 +92,31 @@ public class EManager {
             return rdtAvailable;
         }
 
-        @NonNullByDefault
+        @Override
+        public String toString() {
+            return new ToStringBuilder(this).append("rbc", rbc).append("rpc", rpc).append("rdt", rdt)
+                    .append("actionPending", actionPending).append("rdtAvailable", rdtAvailable).toString();
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder().append(rbc).append(rdt).append(rdtAvailable).append(rpc).append(actionPending)
+                    .toHashCode();
+        }
+
+        @Override
+        public boolean equals(@Nullable Object other) {
+            if (other == this) {
+                return true;
+            }
+            if ((other instanceof EManager) == false) {
+                return false;
+            }
+            EManagerModel rhs = ((EManagerModel) other);
+            return new EqualsBuilder().append(rbc, rhs.rbc).append(rdt, rhs.rdt).append(rdtAvailable, rhs.rdtAvailable)
+                    .append(rpc, rhs.rpc).append(actionPending, rhs.actionPending).isEquals();
+        }
+
         public class Profile {
             private int profileId;
             private @Nullable String profileName;
@@ -125,9 +173,43 @@ public class EManager {
             public @Nullable String getHeaterSource() {
                 return heaterSource;
             }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("profileId", profileId).append("profileName", profileName)
+                        .append("timeStamp", timeStamp).append("charging", charging)
+                        .append("climatisation", climatisation).append("targetChargeLevel", targetChargeLevel)
+                        .append("nightRateActive", nightRateActive).append("nightRateTimeStart", nightRateTimeStart)
+                        .append("nightRateTimeEnd", nightRateTimeEnd).append("chargeMaxCurrent", chargeMaxCurrent)
+                        .append("heaterSource", heaterSource).toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(profileName).append(timeStamp).append(targetChargeLevel)
+                        .append(nightRateTimeEnd).append(chargeMaxCurrent).append(climatisation)
+                        .append(nightRateTimeStart).append(profileId).append(heaterSource).append(nightRateActive)
+                        .append(charging).toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof Profile) == false) {
+                    return false;
+                }
+                Profile rhs = ((Profile) other);
+                return new EqualsBuilder().append(profileName, rhs.profileName).append(timeStamp, rhs.timeStamp)
+                        .append(targetChargeLevel, rhs.targetChargeLevel).append(nightRateTimeEnd, rhs.nightRateTimeEnd)
+                        .append(chargeMaxCurrent, rhs.chargeMaxCurrent).append(climatisation, rhs.climatisation)
+                        .append(nightRateTimeStart, rhs.nightRateTimeStart).append(profileId, rhs.profileId)
+                        .append(heaterSource, rhs.heaterSource).append(nightRateActive, rhs.nightRateActive)
+                        .append(charging, rhs.charging).isEquals();
+            }
         }
 
-        @NonNullByDefault
         public class Rbc {
 
             private Status status = new Status();
@@ -140,9 +222,30 @@ public class EManager {
             public Settings getSettings() {
                 return settings;
             }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("status", status).append("settings", settings).toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(settings).append(status).toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof Rbc) == false) {
+                    return false;
+                }
+                Rbc rhs = ((Rbc) other);
+                return new EqualsBuilder().append(settings, rhs.settings).append(status, rhs.status).isEquals();
+            }
         }
 
-        @NonNullByDefault
         public class Rdt {
             private RdtStatus status = new RdtStatus();
             private RdtSettings settings = new RdtSettings();
@@ -164,9 +267,35 @@ public class EManager {
             public boolean isAuxHeatingEnabled() {
                 return auxHeatingEnabled;
             }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("status", status).append("settings", settings)
+                        .append("auxHeatingAllowed", auxHeatingAllowed).append("auxHeatingEnabled", auxHeatingEnabled)
+                        .toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(settings).append(auxHeatingAllowed).append(status)
+                        .append(auxHeatingEnabled).toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof Rdt) == false) {
+                    return false;
+                }
+                Rdt rhs = ((Rdt) other);
+                return new EqualsBuilder().append(settings, rhs.settings)
+                        .append(auxHeatingAllowed, rhs.auxHeatingAllowed).append(status, rhs.status)
+                        .append(auxHeatingEnabled, rhs.auxHeatingEnabled).isEquals();
+            }
         }
 
-        @NonNullByDefault
         public class Rpc {
             private RpcStatus status = new RpcStatus();
             private RpcSettings settings = new RpcSettings();
@@ -188,9 +317,34 @@ public class EManager {
             public boolean isAuAvailable() {
                 return auAvailable;
             }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("status", status).append("settings", settings)
+                        .append("climaterActionState", climaterActionState).append("auAvailable", auAvailable)
+                        .toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(settings).append(auAvailable).append(climaterActionState)
+                        .append(status).toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof Rpc) == false) {
+                    return false;
+                }
+                Rpc rhs = ((Rpc) other);
+                return new EqualsBuilder().append(settings, rhs.settings).append(auAvailable, rhs.auAvailable)
+                        .append(climaterActionState, rhs.climaterActionState).append(status, rhs.status).isEquals();
+            }
         }
 
-        @NonNullByDefault
         public class Schedule {
             private int type;
             private Start start = new Start();
@@ -227,12 +381,38 @@ public class EManager {
             public @Nullable String getEndDateActive() {
                 return endDateActive;
             }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("type", type).append("start", start).append("end", end)
+                        .append("index", index).append("daypicker", daypicker)
+                        .append("startDateActive", startDateActive).append("endDateActive", endDateActive).toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(endDateActive).append(startDateActive).append(start).append(index)
+                        .append(end).append(type).append(daypicker).toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof Schedule) == false) {
+                    return false;
+                }
+                Schedule rhs = ((Schedule) other);
+                return new EqualsBuilder().append(endDateActive, rhs.endDateActive)
+                        .append(startDateActive, rhs.startDateActive).append(start, rhs.start).append(index, rhs.index)
+                        .append(end, rhs.end).append(type, rhs.type).append(daypicker, rhs.daypicker).isEquals();
+            }
         }
 
-        @NonNullByDefault
         public class Settings {
-            private int chargerMaxCurrent;
-            private int maxAmpere;
+            private int chargerMaxCurrent = BaseVehicle.UNDEFINED;
+            private int maxAmpere = BaseVehicle.UNDEFINED;
             private boolean maxCurrentReduced;
 
             public int getChargerMaxCurrent() {
@@ -246,9 +426,34 @@ public class EManager {
             public boolean isMaxCurrentReduced() {
                 return maxCurrentReduced;
             }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("chargerMaxCurrent", chargerMaxCurrent)
+                        .append("maxAmpere", maxAmpere).append("maxCurrentReduced", maxCurrentReduced).toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(maxAmpere).append(maxCurrentReduced).append(chargerMaxCurrent)
+                        .toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof Settings) == false) {
+                    return false;
+                }
+                Settings rhs = ((Settings) other);
+                return new EqualsBuilder().append(maxAmpere, rhs.maxAmpere)
+                        .append(maxCurrentReduced, rhs.maxCurrentReduced)
+                        .append(chargerMaxCurrent, rhs.chargerMaxCurrent).isEquals();
+            }
         }
 
-        @NonNullByDefault
         public class RpcSettings {
             private @Nullable String targetTemperature;
             private boolean climatisationWithoutHVPower;
@@ -265,9 +470,34 @@ public class EManager {
             public boolean isElectric() {
                 return electric;
             }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("targetTemperature", targetTemperature)
+                        .append("climatisationWithoutHVPower", climatisationWithoutHVPower).append("electric", electric)
+                        .toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(climatisationWithoutHVPower).append(targetTemperature)
+                        .append(electric).toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof RpcSettings) == false) {
+                    return false;
+                }
+                RpcSettings rhs = ((RpcSettings) other);
+                return new EqualsBuilder().append(climatisationWithoutHVPower, rhs.climatisationWithoutHVPower)
+                        .append(targetTemperature, rhs.targetTemperature).append(electric, rhs.electric).isEquals();
+            }
         }
 
-        @NonNullByDefault
         public class RdtSettings {
 
             private int minChargeLimit;
@@ -280,9 +510,32 @@ public class EManager {
             public int getLowerLimitMax() {
                 return lowerLimitMax;
             }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("minChargeLimit", minChargeLimit)
+                        .append("lowerLimitMax", lowerLimitMax).toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(minChargeLimit).append(lowerLimitMax).toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof RdtSettings) == false) {
+                    return false;
+                }
+                RdtSettings rhs = ((RdtSettings) other);
+                return new EqualsBuilder().append(minChargeLimit, rhs.minChargeLimit)
+                        .append(lowerLimitMax, rhs.lowerLimitMax).isEquals();
+            }
         }
 
-        @NonNullByDefault
         public class Start {
             private int hours;
             private int minutes;
@@ -294,9 +547,30 @@ public class EManager {
             public int getMinutes() {
                 return minutes;
             }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("hours", hours).append("minutes", minutes).toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(hours).append(minutes).toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof Start) == false) {
+                    return false;
+                }
+                Start rhs = ((Start) other);
+                return new EqualsBuilder().append(hours, rhs.hours).append(minutes, rhs.minutes).isEquals();
+            }
         }
 
-        @NonNullByDefault
         public class End {
             private int hours;
             private int minutes;
@@ -308,14 +582,35 @@ public class EManager {
             public int getMinutes() {
                 return minutes;
             }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("hours", hours).append("minutes", minutes).toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(hours).append(minutes).toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof End) == false) {
+                    return false;
+                }
+                End rhs = ((End) other);
+                return new EqualsBuilder().append(hours, rhs.hours).append(minutes, rhs.minutes).isEquals();
+            }
         }
 
-        @NonNullByDefault
         public class Status {
             private int batteryPercentage;
             private @Nullable String chargingState;
-            private @Nullable String chargingRemaningHour;
-            private @Nullable String chargingRemaningMinute;
+            private int chargingRemaningHour = BaseVehicle.UNDEFINED;
+            private int chargingRemaningMinute = BaseVehicle.UNDEFINED;
             private @Nullable String chargingReason;
             private @Nullable String pluginState;
             private @Nullable String lockState;
@@ -330,15 +625,15 @@ public class EManager {
                 return batteryPercentage;
             }
 
-            public @Nullable String getChargingState() {
-                return chargingState;
+            public boolean getChargingState() {
+                return chargingState != null && chargingState.equals("ON") ? true : false;
             }
 
-            public @Nullable String getChargingRemaningHour() {
+            public int getChargingRemainingHour() {
                 return chargingRemaningHour;
             }
 
-            public @Nullable String getChargingRemaningMinute() {
+            public int getChargingRemainingMinute() {
                 return chargingRemaningMinute;
             }
 
@@ -346,16 +641,16 @@ public class EManager {
                 return chargingReason;
             }
 
-            public @Nullable String getPluginState() {
-                return pluginState;
+            public boolean getPluginState() {
+                return pluginState != null && pluginState.equals("CONNECTED") ? true : false;
             }
 
-            public @Nullable String getLockState() {
-                return lockState;
+            public boolean getLockState() {
+                return lockState != null && lockState.equals("LOCKED") ? true : false;
             }
 
-            public @Nullable String getExtPowerSupplyState() {
-                return extPowerSupplyState;
+            public boolean getExtPowerSupplyState() {
+                return extPowerSupplyState != null && extPowerSupplyState.equals("AVAILABLE") ? true : false;
             }
 
             public double getRange() {
@@ -377,31 +672,71 @@ public class EManager {
             public boolean isRlzeUp() {
                 return rlzeUp;
             }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("batteryPercentage", batteryPercentage)
+                        .append("chargingState", chargingState).append("chargingRemaningHour", chargingRemaningHour)
+                        .append("chargingRemaningMinute", chargingRemaningMinute)
+                        .append("chargingReason", chargingReason).append("pluginState", pluginState)
+                        .append("lockState", lockState).append("extPowerSupplyState", extPowerSupplyState)
+                        .append("range", range).append("electricRange", electricRange)
+                        .append("combustionRange", combustionRange).append("combinedRange", combinedRange)
+                        .append("rlzeUp", rlzeUp).toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(combustionRange).append(extPowerSupplyState)
+                        .append(chargingRemaningHour).append(chargingReason).append(range)
+                        .append(chargingRemaningMinute).append(pluginState).append(lockState).append(chargingState)
+                        .append(rlzeUp).append(combinedRange).append(batteryPercentage).append(electricRange)
+                        .toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof Status) == false) {
+                    return false;
+                }
+                Status rhs = ((Status) other);
+                return new EqualsBuilder().append(combustionRange, rhs.combustionRange)
+                        .append(extPowerSupplyState, rhs.extPowerSupplyState)
+                        .append(chargingRemaningHour, rhs.chargingRemaningHour)
+                        .append(chargingReason, rhs.chargingReason).append(range, rhs.range)
+                        .append(chargingRemaningMinute, rhs.chargingRemaningMinute).append(pluginState, rhs.pluginState)
+                        .append(lockState, rhs.lockState).append(chargingState, rhs.chargingState)
+                        .append(rlzeUp, rhs.rlzeUp).append(combinedRange, rhs.combinedRange)
+                        .append(batteryPercentage, rhs.batteryPercentage).append(electricRange, rhs.electricRange)
+                        .isEquals();
+            }
         }
 
-        @NonNullByDefault
         public class RpcStatus {
             private @Nullable String climatisationState;
-            private int climatisationRemaningTime;
+            private int climatisationRemaningTime = BaseVehicle.UNDEFINED;
             private @Nullable String windowHeatingStateFront;
             private @Nullable String windowHeatingStateRear;
             private @Nullable String climatisationReason;
             private boolean windowHeatingAvailable;
 
-            public @Nullable String getClimatisationState() {
-                return climatisationState;
+            public boolean getClimatisationState() {
+                return climatisationState != null && climatisationState.equals("ON") ? true : false;
             }
 
             public int getClimatisationRemaningTime() {
                 return climatisationRemaningTime;
             }
 
-            public @Nullable String getWindowHeatingStateFront() {
-                return windowHeatingStateFront;
+            public boolean getWindowHeatingStateFront() {
+                return windowHeatingStateFront != null && windowHeatingStateFront.equals("ON") ? true : false;
             }
 
-            public @Nullable String getWindowHeatingStateRear() {
-                return windowHeatingStateRear;
+            public boolean getWindowHeatingStateRear() {
+                return windowHeatingStateRear != null && windowHeatingStateRear.equals("ON") ? true : false;
             }
 
             public @Nullable String getClimatisationReason() {
@@ -411,9 +746,42 @@ public class EManager {
             public boolean isWindowHeatingAvailable() {
                 return windowHeatingAvailable;
             }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("climatisationState", climatisationState)
+                        .append("climatisationRemaningTime", climatisationRemaningTime)
+                        .append("windowHeatingStateFront", windowHeatingStateFront)
+                        .append("windowHeatingStateRear", windowHeatingStateRear)
+                        .append("climatisationReason", climatisationReason)
+                        .append("windowHeatingAvailable", windowHeatingAvailable).toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(climatisationReason).append(windowHeatingAvailable)
+                        .append(climatisationState).append(windowHeatingStateRear).append(climatisationRemaningTime)
+                        .append(windowHeatingStateFront).toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof RpcStatus) == false) {
+                    return false;
+                }
+                RpcStatus rhs = ((RpcStatus) other);
+                return new EqualsBuilder().append(climatisationReason, rhs.climatisationReason)
+                        .append(windowHeatingAvailable, rhs.windowHeatingAvailable)
+                        .append(climatisationState, rhs.climatisationState)
+                        .append(windowHeatingStateRear, rhs.windowHeatingStateRear)
+                        .append(climatisationRemaningTime, rhs.climatisationRemaningTime)
+                        .append(windowHeatingStateFront, rhs.windowHeatingStateFront).isEquals();
+            }
         }
 
-        @NonNullByDefault
         public class RdtStatus {
             private List<Timer> timers = new ArrayList<>();
             private List<Profile> profiles = new ArrayList<>();
@@ -425,9 +793,30 @@ public class EManager {
             public List<Profile> getProfiles() {
                 return profiles;
             }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("timers", timers).append("profiles", profiles).toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(profiles).append(timers).toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof RdtStatus) == false) {
+                    return false;
+                }
+                RdtStatus rhs = ((RdtStatus) other);
+                return new EqualsBuilder().append(profiles, rhs.profiles).append(timers, rhs.timers).isEquals();
+            }
         }
 
-        @NonNullByDefault
         public class Timer {
             private int timerId;
             private int timerProfileId;
@@ -478,6 +867,45 @@ public class EManager {
 
             public @Nullable String getTimeRangeActive() {
                 return timeRangeActive;
+            }
+
+            @Override
+            public String toString() {
+                return new ToStringBuilder(this).append("timerId", timerId).append("timerProfileId", timerProfileId)
+                        .append("timerStatus", timerStatus)
+                        .append("timerChargeScheduleStatus", timerChargeScheduleStatus)
+                        .append("timerClimateScheduleStatus", timerClimateScheduleStatus)
+                        .append("timerExpStatusTimestamp", timerExpStatusTimestamp)
+                        .append("timerProgrammedStatus", timerProgrammedStatus).append("schedule", schedule)
+                        .append("startDateActive", startDateActive).append("timeRangeActive", timeRangeActive)
+                        .toString();
+            }
+
+            @Override
+            public int hashCode() {
+                return new HashCodeBuilder().append(timerProgrammedStatus).append(schedule).append(startDateActive)
+                        .append(timerStatus).append(timerClimateScheduleStatus).append(timeRangeActive)
+                        .append(timerChargeScheduleStatus).append(timerExpStatusTimestamp).append(timerProfileId)
+                        .append(timerId).toHashCode();
+            }
+
+            @Override
+            public boolean equals(@Nullable Object other) {
+                if (other == this) {
+                    return true;
+                }
+                if ((other instanceof Timer) == false) {
+                    return false;
+                }
+                Timer rhs = ((Timer) other);
+                return new EqualsBuilder().append(timerProgrammedStatus, rhs.timerProgrammedStatus)
+                        .append(schedule, rhs.schedule).append(startDateActive, rhs.startDateActive)
+                        .append(timerStatus, rhs.timerStatus)
+                        .append(timerClimateScheduleStatus, rhs.timerClimateScheduleStatus)
+                        .append(timeRangeActive, rhs.timeRangeActive)
+                        .append(timerChargeScheduleStatus, rhs.timerChargeScheduleStatus)
+                        .append(timerExpStatusTimestamp, rhs.timerExpStatusTimestamp)
+                        .append(timerProfileId, rhs.timerProfileId).append(timerId, rhs.timerId).isEquals();
             }
         }
     }

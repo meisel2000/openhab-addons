@@ -65,7 +65,6 @@ public class Details {
                 .isEquals();
     }
 
-    @NonNullByDefault
     public class VehicleDetails {
 
         private List<String> lastConnectionTimeStamp = new ArrayList<>();

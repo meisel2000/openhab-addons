@@ -60,7 +60,6 @@ public class Location {
         return new EqualsBuilder().append(errorCode, rhs.errorCode).append(position, rhs.position).isEquals();
     }
 
-    @NonNullByDefault
     public class Position {
 
         private double lat = BaseVehicle.UNDEFINED;

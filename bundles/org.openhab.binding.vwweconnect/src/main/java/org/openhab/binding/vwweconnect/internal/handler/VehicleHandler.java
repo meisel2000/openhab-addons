@@ -20,10 +20,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.measure.quantity.Length;
-import javax.measure.quantity.Speed;
-import javax.measure.quantity.Temperature;
 import javax.measure.quantity.Time;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -54,6 +53,8 @@ import org.eclipse.smarthome.core.types.UnDefType;
 import org.eclipse.smarthome.io.net.http.HttpUtil;
 import org.openhab.binding.vwweconnect.internal.VWWeConnectSession;
 import org.openhab.binding.vwweconnect.internal.action.VWWeConnectActions;
+import org.openhab.binding.vwweconnect.internal.model.ActionNotification;
+import org.openhab.binding.vwweconnect.internal.model.ActionNotification.ActionNotificationList;
 import org.openhab.binding.vwweconnect.internal.model.BaseVehicle;
 import org.openhab.binding.vwweconnect.internal.model.Details.VehicleDetails;
 import org.openhab.binding.vwweconnect.internal.model.EManager;
@@ -173,6 +174,12 @@ public class VehicleHandler extends VWWeConnectHandler {
                 return OnOffType.from(vehicle.getEngineTypeCombustian());
             case ENGINE_TYPE_ELECTRIC:
                 return OnOffType.from(vehicle.getEngineTypeElectric());
+            case ENGINE_TYPE_HYBRID_OCU1:
+                return OnOffType.from(vehicle.getEngineTypeHybridOCU1());
+            case ENGINE_TYPE_HYBRID_OCU2:
+                return OnOffType.from(vehicle.getEngineTypeHybridOCU2());
+            case ENGINE_TYPE_CNG:
+                return OnOffType.from(vehicle.getEngineTypeCNG());
             case FUEL_LEVEL:
                 return vehicleStatus.getFuelLevel() != BaseVehicle.UNDEFINED
                         ? new QuantityType<>(vehicleStatus.getFuelLevel(), SmartHomeUnits.PERCENT)
@@ -183,7 +190,7 @@ public class VehicleHandler extends VWWeConnectHandler {
                         : UnDefType.UNDEF;
             case FUEL_RANGE:
                 return vehicleStatus.getFuelRange() != BaseVehicle.UNDEFINED
-                        ? new QuantityType<Length>(vehicleStatus.getFuelRange(), KILO(SIUnits.METRE))
+                        ? new QuantityType<>(vehicleStatus.getFuelRange(), KILO(SIUnits.METRE))
                         : UnDefType.UNDEF;
             case FUEL_ALERT:
                 return vehicleStatus.getFuelRange() != BaseVehicle.UNDEFINED
@@ -199,7 +206,7 @@ public class VehicleHandler extends VWWeConnectHandler {
                         : UnDefType.UNDEF;
             case CNG_RANGE:
                 return vehicleStatus.getCngRange() != BaseVehicle.UNDEFINED
-                        ? new QuantityType<Length>(vehicleStatus.getCngRange(), KILO(SIUnits.METRE))
+                        ? new QuantityType<>(vehicleStatus.getCngRange(), KILO(SIUnits.METRE))
                         : UnDefType.UNDEF;
             case CNG_ALERT:
                 return vehicleStatus.getCngRange() != BaseVehicle.UNDEFINED
@@ -217,41 +224,67 @@ public class VehicleHandler extends VWWeConnectHandler {
                                 : UnDefType.UNDEF;
             case BATTERY_RANGE:
                 return vehicleStatus.getBatteryRange() != BaseVehicle.UNDEFINED
-                        ? new QuantityType<Length>(vehicleStatus.getBatteryRange(), KILO(SIUnits.METRE))
+                        ? new QuantityType<>(vehicleStatus.getBatteryRange(), KILO(SIUnits.METRE))
                         : UnDefType.UNDEF;
             case BATTERY_ALERT:
                 return vehicleStatus.getBatteryRange() != BaseVehicle.UNDEFINED
                         ? OnOffType.from(vehicleStatus.getBatteryRange() < 100)
                         : UnDefType.UNDEF;
             case CHARGING_STATE:
-                String chargingState = eManager.getEManager().getRbc().getStatus().getChargingState();
-                return chargingState != null ? OnOffType.from(chargingState.equals("ON")) : UnDefType.UNDEF;
+                return OnOffType.from(eManager.getEManager().getRbc().getStatus().getChargingState());
             case CHARGING_REMAINING_HOUR:
-                String chargingRemainingHour = eManager.getEManager().getRbc().getStatus().getChargingRemaningHour();
-                return chargingRemainingHour != null && !chargingRemainingHour.equals("")
-                        ? new QuantityType<Time>(Integer.parseInt(chargingRemainingHour), SmartHomeUnits.HOUR)
+                return eManager.getEManager().getRbc().getStatus().getChargingRemainingHour() != BaseVehicle.UNDEFINED
+                        ? new QuantityType<>(eManager.getEManager().getRbc().getStatus().getChargingRemainingHour(),
+                                SmartHomeUnits.HOUR)
                         : UnDefType.UNDEF;
             case CHARGING_REMAINING_MINUTE:
-                String chargingRemainingMinute = eManager.getEManager().getRbc().getStatus()
-                        .getChargingRemaningMinute();
-                return chargingRemainingMinute != null && !chargingRemainingMinute.equals("")
-                        ? new QuantityType<Time>(Integer.parseInt(chargingRemainingMinute), SmartHomeUnits.MINUTE)
+                return eManager.getEManager().getRbc().getStatus().getChargingRemainingMinute() != BaseVehicle.UNDEFINED
+                        ? new QuantityType<>(eManager.getEManager().getRbc().getStatus().getChargingRemainingMinute(),
+                                SmartHomeUnits.MINUTE)
                         : UnDefType.UNDEF;
             case CHARGING_REASON:
                 String chargingReason = eManager.getEManager().getRbc().getStatus().getChargingReason();
                 return chargingReason != null ? new StringType(chargingReason) : UnDefType.UNDEF;
             case PLUGIN_STATE:
-                String pluginState = eManager.getEManager().getRbc().getStatus().getPluginState();
-                return pluginState != null ? new StringType(pluginState) : UnDefType.UNDEF;
+                return OnOffType.from(eManager.getEManager().getRbc().getStatus().getPluginState());
             case LOCK_STATE:
-                String lockState = eManager.getEManager().getRbc().getStatus().getLockState();
-                return lockState != null ? new StringType(lockState) : UnDefType.UNDEF;
+                return OnOffType.from(eManager.getEManager().getRbc().getStatus().getLockState());
             case EXTERNAL_POWER_SUPPLY_STATE:
-                String externalPowerSupplyState = eManager.getEManager().getRbc().getStatus().getExtPowerSupplyState();
-                return externalPowerSupplyState != null ? new StringType(externalPowerSupplyState) : UnDefType.UNDEF;
+                return OnOffType.from(eManager.getEManager().getRbc().getStatus().getExtPowerSupplyState());
+            case CHARGER_MAX_CURRENT:
+                return eManager.getEManager().getRbc().getSettings().getChargerMaxCurrent() != BaseVehicle.UNDEFINED
+                        ? new QuantityType<>(eManager.getEManager().getRbc().getSettings().getChargerMaxCurrent(),
+                                SmartHomeUnits.AMPERE)
+                        : UnDefType.UNDEF;
+            case MAX_AMPERE:
+                return eManager.getEManager().getRbc().getSettings().getMaxAmpere() != BaseVehicle.UNDEFINED
+                        ? new QuantityType<>(eManager.getEManager().getRbc().getSettings().getMaxAmpere(),
+                                SmartHomeUnits.AMPERE)
+                        : UnDefType.UNDEF;
+            case MAX_CURRENT_REDUCED:
+                return OnOffType.from(eManager.getEManager().getRbc().getSettings().isMaxCurrentReduced());
+            case CLIMATISATION_STATE:
+                return OnOffType.from(eManager.getEManager().getRpc().getStatus().getClimatisationState());
+            case CLIMATISATION_REMAINING_TIME:
+                return eManager.getEManager().getRpc().getStatus()
+                        .getClimatisationRemaningTime() != BaseVehicle.UNDEFINED
+                                ? new QuantityType<>(
+                                        eManager.getEManager().getRpc().getStatus().getClimatisationRemaningTime(),
+                                        SmartHomeUnits.MINUTE)
+                                : UnDefType.UNDEF;
+            case CLIMATISATION_REASON:
+                return new StringType(eManager.getEManager().getRpc().getStatus().getClimatisationReason());
+            case WINDOW_HEATING_STATE_FRONT:
+                return OnOffType.from(eManager.getEManager().getRpc().getStatus().getWindowHeatingStateFront());
+            case WINDOW_HEATING_STATE_REAR:
+                return OnOffType.from(eManager.getEManager().getRpc().getStatus().getWindowHeatingStateRear());
+            case TOTAL_DISTANCE:
+                return vehicleDetails.getDistanceCovered() != BaseVehicle.UNDEFINED
+                        ? new QuantityType<Length>(vehicleDetails.getDistanceCovered() * 1000, KILO(SIUnits.METRE))
+                        : UnDefType.UNDEF;
             case TOTAL_TRIP_DISTANCE:
                 return trips.getRtsViewModel().getLongTermData().getTripLength() != BaseVehicle.UNDEFINED
-                        ? new QuantityType<Length>(trips.getRtsViewModel().getLongTermData().getTripLength(),
+                        ? new QuantityType<>(trips.getRtsViewModel().getLongTermData().getTripLength(),
                                 KILO(SIUnits.METRE))
                         : UnDefType.UNDEF;
             case TOTAL_TRIP_DURATION:
@@ -261,7 +294,7 @@ public class VehicleHandler extends VWWeConnectHandler {
                         : UnDefType.UNDEF;
             case TOTAL_AVERAGE_SPEED:
                 return trips.getRtsViewModel().getLongTermData().getAverageSpeed() != BaseVehicle.UNDEFINED
-                        ? new QuantityType<Speed>(trips.getRtsViewModel().getLongTermData().getAverageSpeed(),
+                        ? new QuantityType<>(trips.getRtsViewModel().getLongTermData().getAverageSpeed(),
                                 SIUnits.KILOMETRE_PER_HOUR)
                         : UnDefType.UNDEF;
             case SERVICE_INSPECTION:
@@ -307,14 +340,14 @@ public class VehicleHandler extends VWWeConnectHandler {
             case TEMPERATURE:
                 return vehicleHeaterStatus.getRemoteAuxiliaryHeating().getStatus()
                         .getTemperature() != BaseVehicle.UNDEFINED
-                                ? new QuantityType<Temperature>(
+                                ? new QuantityType<>(
                                         vehicleHeaterStatus.getRemoteAuxiliaryHeating().getStatus().getTemperature(),
                                         SIUnits.CELSIUS)
                                 : UnDefType.NULL;
             case REMAINING_TIME:
                 return vehicleHeaterStatus.getRemoteAuxiliaryHeating().getStatus()
                         .getRemainingTime() != BaseVehicle.UNDEFINED
-                                ? new QuantityType<Time>(
+                                ? new QuantityType<>(
                                         vehicleHeaterStatus.getRemoteAuxiliaryHeating().getStatus().getRemainingTime(),
                                         SmartHomeUnits.MINUTE)
                                 : UnDefType.UNDEF;
@@ -404,11 +437,11 @@ public class VehicleHandler extends VWWeConnectHandler {
                         : UnDefType.UNDEF;
             case TRIP_AVERAGE_SPEED:
                 return trip.getAverageSpeed() != BaseVehicle.UNDEFINED
-                        ? new QuantityType<Speed>(trip.getAverageSpeed(), SIUnits.KILOMETRE_PER_HOUR)
+                        ? new QuantityType<>(trip.getAverageSpeed(), SIUnits.KILOMETRE_PER_HOUR)
                         : UnDefType.UNDEF;
             case TRIP_DISTANCE:
                 return trip.getTripLength() != BaseVehicle.UNDEFINED
-                        ? new QuantityType<Length>(trip.getTripLength(), KILO(SIUnits.METRE))
+                        ? new QuantityType<>(trip.getTripLength(), KILO(SIUnits.METRE))
                         : UnDefType.UNDEF;
             case TRIP_START_TIME:
                 ZonedDateTime localStartTimestamp = trip.getStartTimestamp();
@@ -418,7 +451,7 @@ public class VehicleHandler extends VWWeConnectHandler {
                 return localEndTimestamp != null ? new DateTimeType(localEndTimestamp) : UnDefType.UNDEF;
             case TRIP_DURATION:
                 return trip.getTripDuration() != BaseVehicle.UNDEFINED
-                        ? new QuantityType<Time>(trip.getTripDuration(), SmartHomeUnits.MINUTE)
+                        ? new QuantityType<>(trip.getTripDuration(), SmartHomeUnits.MINUTE)
                         : UnDefType.UNDEF;
         }
 
@@ -452,7 +485,7 @@ public class VehicleHandler extends VWWeConnectHandler {
             }
 
             try {
-                Thread.sleep(5 * SLEEP_TIME_MILLIS);
+                Thread.sleep(10 * SLEEP_TIME_MILLIS);
             } catch (InterruptedException e) {
                 logger.warn("InterruptedException caught: {}", e.getMessage(), e);
             }
@@ -463,12 +496,32 @@ public class VehicleHandler extends VWWeConnectHandler {
                 String content = httpResponse.getContentAsString();
                 logger.debug("Content: {}", content);
                 if (!session.isErrorCode(content)) {
-                    String requestStatus = JsonPath.read(content, PARSE_REQUEST_STATUS);
+                    String requestStatus = null;
+                    ActionNotification notification = null;
+                    if (requestStatusUrl.equals(REQUEST_STATUS)) {
+                        requestStatus = JsonPath.read(content, PARSE_REQUEST_STATUS);
+                    } else if (requestStatusUrl.equals(EMANAGER_GET_NOTIFICATIONS)) {
+                        notification = session.convertFromJSON(content, ActionNotification.class);
+                    }
+
                     if (requestStatus != null && (requestStatus.equals("REQUEST_IN_PROGRESS")
                             || requestStatus.equals("REQUEST_SUCCESSFUL"))) {
                         logger.debug("Command has status {} ", requestStatus);
+                    } else if (notification != null) {
+                        List<ActionNotificationList> list = notification.getActionNotificationList().stream()
+                                .filter(a -> a.getActionState() != null
+                                        && (a.getActionState().equals("QUEUED") || a.getActionState().equals("FETCHED")
+                                                || a.getActionState().equals("SUCCEEDED")))
+                                .collect(Collectors.toList());
+                        if (list.size() > 0) {
+                            logger.debug("Command has status {} ", list.get(0).getActionState());
+                        } else {
+                            logger.warn("Request status for vehicle {} : {}", vin, notification);
+                            return false;
+                        }
                     } else {
-                        logger.warn("Failed to request status for vehicle {}! Request status: {}", vin, requestStatus);
+                        logger.warn("Failed to request status for vehicle {}! Request status: {}", vin,
+                                requestStatus != null ? requestStatus : notification);
                         return false;
                     }
                 } else {
@@ -591,7 +644,7 @@ public class VehicleHandler extends VWWeConnectHandler {
                     }
                     String url = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl() + CHARGE_BATTERY;
                     String requestStatusUrl = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl()
-                            + REQUEST_STATUS;
+                            + EMANAGER_GET_NOTIFICATIONS;
                     if (sendCommand(vin, url, requestStatusUrl, data)) {
                         scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
                     } else {
@@ -623,7 +676,8 @@ public class VehicleHandler extends VWWeConnectHandler {
                     String url = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl()
                             + TRIGGER_CLIMATISATION;
                     String requestStatusUrl = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl()
-                            + REQUEST_STATUS;
+                            + EMANAGER_GET_NOTIFICATIONS;
+                    ;
                     if (sendCommand(vin, url, requestStatusUrl, data)) {
                         scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
                     } else {
@@ -655,7 +709,8 @@ public class VehicleHandler extends VWWeConnectHandler {
                     String url = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl()
                             + TRIGGER_WINDOW_HEAT;
                     String requestStatusUrl = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl()
-                            + REQUEST_STATUS;
+                            + EMANAGER_GET_NOTIFICATIONS;
+                    ;
                     if (sendCommand(vin, url, requestStatusUrl, data)) {
                         scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
                     } else {

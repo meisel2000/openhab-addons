@@ -70,7 +70,6 @@ public class HeaterStatus {
                 .append(remoteAuxiliaryHeating, rhs.remoteAuxiliaryHeating).isEquals();
     }
 
-    @NonNullByDefault
     public class RemoteAuxiliaryHeating {
 
         private Status status = new Status();
@@ -107,7 +106,6 @@ public class HeaterStatus {
         }
     }
 
-    @NonNullByDefault
     public class Status {
 
         private boolean active;
@@ -167,7 +165,6 @@ public class HeaterStatus {
         }
     }
 
-    @NonNullByDefault
     public class Time {
 
         private int hours;
@@ -204,7 +201,6 @@ public class HeaterStatus {
         }
     }
 
-    @NonNullByDefault
     public class Timer {
 
         private int timerId;

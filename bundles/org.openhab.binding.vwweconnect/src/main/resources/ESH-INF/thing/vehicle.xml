@@ -54,13 +54,17 @@
 	<channel-group-type id="odometer">
 		<label>Total Trip Data</label>
 		<channels>
+			<channel id="totalDistance" typeId="odometer">
+				<label>Total Distance</label>
+				<description>Total distance traveled</description>
+			</channel>
 			<channel id="totalAverageSpeed" typeId="averageSpeed">
 				<label>Total Average Speed</label>
 				<description>Total average speed</description>
 			</channel>
 			<channel id="totalTripDistance" typeId="odometer">
-				<label>Total Distance</label>
-				<description>Total distance traveled</description>
+				<label>Total Trip Distance</label>
+				<description>Total trip distance traveled</description>
 			</channel>
 			<channel id="totalTripDuration" typeId="tripDuration">
 				<label>Total Duration</label>
@@ -185,7 +189,7 @@
 	</channel-group-type>
 
 	<channel-group-type id="electric">
-		<label>Electric Info</label>
+		<label>Electric/Hybrid Info</label>
 		<channels>
 			<channel id="batteryLevel" typeId="batteryLevel" />
 			<channel id="electricConsumption" typeId="electricConsumption" />
@@ -201,6 +205,14 @@
 			<channel id="pluginState" typeId="pluginState" />
 			<channel id="lockState" typeId="lockState" />
 			<channel id="extPowerSupplyState" typeId="extPowerSupplyState" />
+			<channel id="chargerMaxCurrent" typeId="chargerMaxCurrent" />
+			<channel id="maxAmpere" typeId="maxAmpere" />
+			<channel id="maxCurrentReduced" typeId="maxCurrentReduced" />
+			<channel id="climatisationState" typeId="climatisationState" />
+			<channel id="climatisationRemainingTime" typeId="climatisationRemainingTime" />
+			<channel id="climatisationReason" typeId="climatisationReason" />
+			<channel id="windowHeatingStateFront" typeId="windowHeatingStateFront" />
+			<channel id="windowHeatingStateRear" typeId="windowHeatingStateRear" />
 		</channels>
 	</channel-group-type>
 
@@ -226,6 +238,9 @@
 			<channel id="imageURL" typeId="imageURL" />
 			<channel id="engineTypeCombustian" typeId="engineTypeCombustian" />
 			<channel id="engineTypeElectric" typeId="engineTypeElectric" />
+			<channel id="engineTypeHybridOCU1" typeId="engineTypeHybridOCU1" />
+			<channel id="engineTypeHybridOCU2" typeId="engineTypeHybridOCU2" />
+			<channel id="engineTypeCNG" typeId="engineTypeCNG" />
 			<channel id="serviceInspectionStatus" typeId="serviceInspectionStatus" />
 			<channel id="oilInspectionStatus" typeId="oilInspectionStatus" />
 		</channels>
@@ -336,23 +351,79 @@
 	</channel-type>
 
 	<channel-type id="pluginState" advanced="true">
-		<item-type>String</item-type>
+		<item-type>Switch</item-type>
 		<label>Plugin State</label>
 		<description>Indicates plugin state.</description>
 		<state readOnly="true"></state>
 	</channel-type>
 
 	<channel-type id="lockState" advanced="true">
-		<item-type>String</item-type>
+		<item-type>Switch</item-type>
 		<label>Lock State</label>
 		<description>Indicates lock state.</description>
 		<state readOnly="true"></state>
 	</channel-type>
 
 	<channel-type id="extPowerSupplyState" advanced="true">
-		<item-type>String</item-type>
+		<item-type>Switch</item-type>
 		<label>External Power Supply State</label>
 		<description>Indicates external power supply state.</description>
+		<state readOnly="true"></state>
+	</channel-type>
+
+	<channel-type id="chargerMaxCurrent" advanced="true">
+		<item-type>Number:ElectricCurrent</item-type>
+		<label>Max Charger Current</label>
+		<description>Max configured charger current in A.</description>
+		<state readOnly="true"></state>
+	</channel-type>
+
+	<channel-type id="maxAmpere" advanced="true">
+		<item-type>Number:ElectricCurrent</item-type>
+		<label>Max Ampere</label>
+		<description>Max configured charger current in A.</description>
+		<state readOnly="true"></state>
+	</channel-type>
+
+	<channel-type id="maxCurrentReduced" advanced="true">
+		<item-type>Switch</item-type>
+		<label>Max Current Reduced</label>
+		<description>Indicates if max current is reduced.</description>
+		<state readOnly="true"></state>
+	</channel-type>
+
+	<channel-type id="climatisationState" advanced="true">
+		<item-type>Switch</item-type>
+		<label>Climatisation State</label>
+		<description>Indicates climatisation state.</description>
+		<state readOnly="true"></state>
+	</channel-type>
+
+	<channel-type id="climatisationRemainingTime" advanced="true">
+		<item-type>Number:Time</item-type>
+		<label>Climatisation Remaining Time</label>
+		<description>Remaining climatisation time in minutes.</description>
+		<state readOnly="true"></state>
+	</channel-type>
+
+	<channel-type id="climatisationReason" advanced="true">
+		<item-type>String</item-type>
+		<label>Climatisation Reason</label>
+		<description>Indicates climatisation state.</description>
+		<state readOnly="true"></state>
+	</channel-type>
+
+	<channel-type id="windowHeatingStateFront" advanced="true">
+		<item-type>Switch</item-type>
+		<label>Window Heating State Front</label>
+		<description>Indicates window heating state front.</description>
+		<state readOnly="true"></state>
+	</channel-type>
+
+	<channel-type id="windowHeatingStateRear" advanced="true">
+		<item-type>Switch</item-type>
+		<label>Window Heating State Rear</label>
+		<description>Indicates window heating state rear.</description>
 		<state readOnly="true"></state>
 	</channel-type>
 
@@ -514,6 +585,27 @@
 		<item-type>Switch</item-type>
 		<label>Electric engine type</label>
 		<description>Indicates if the engine type is electric.</description>
+		<state readOnly="true"></state>
+	</channel-type>
+
+	<channel-type id="engineTypeHybridOCU1" advanced="true">
+		<item-type>Switch</item-type>
+		<label>Hybrid OCU1 engine type</label>
+		<description>Indicates if the engine type is hybrid OCU1.</description>
+		<state readOnly="true"></state>
+	</channel-type>
+
+	<channel-type id="engineTypeHybridOCU2" advanced="true">
+		<item-type>Switch</item-type>
+		<label>Hybrid OCU2 engine type</label>
+		<description>Indicates if the engine type is hybrid OCU2.</description>
+		<state readOnly="true"></state>
+	</channel-type>
+
+	<channel-type id="engineTypeCNG" advanced="true">
+		<item-type>Switch</item-type>
+		<label>Compressed Natural Gas engine type</label>
+		<description>Indicates if the engine type is compressed natural gas.</description>
 		<state readOnly="true"></state>
 	</channel-type>
 

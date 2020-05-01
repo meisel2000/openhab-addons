@@ -47,6 +47,7 @@ import org.openhab.binding.vwweconnect.internal.model.Location;
 import org.openhab.binding.vwweconnect.internal.model.Status;
 import org.openhab.binding.vwweconnect.internal.model.Trips;
 import org.openhab.binding.vwweconnect.internal.model.Vehicle;
+import org.openhab.binding.vwweconnect.internal.model.Vehicle.CompleteVehicleJson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,6 +157,10 @@ public class VWWeConnectSession {
     public @Nullable ContentResponse sendCommand(String url, @Nullable Fields fields) {
         logger.debug("Sending command: {}", url);
         return postJSONVWWeConnectAPI(url, fields, referer, xCsrfToken);
+    }
+
+    public @Nullable <T> T convertFromJSON(String json, Class<T> jsonClass) {
+        return gson.fromJson(json, jsonClass);
     }
 
     public boolean isErrorCode(@Nullable String jsonContent) {
@@ -458,12 +463,12 @@ public class VWWeConnectSession {
             String url = SESSION_BASE + REQUEST_LANDING_PAGE;
             logger.debug("Login URL: {}", url);
             ContentResponse httpResponse = getVWWeConnectAPI(url);
-            if (!checkHttpResponse200(httpResponse)) {
+            if (httpResponse != null && !checkHttpResponse200(httpResponse)) {
                 if (checkHttpResponse302(httpResponse)) {
                     url = httpResponse.getHeaders().get("location");
                     logger.debug("Redirection to: {}", url);
                     httpResponse = getVWWeConnectAPI(url);
-                    if (!checkHttpResponse200(httpResponse)) {
+                    if (httpResponse != null && !checkHttpResponse200(httpResponse)) {
                         if (checkHttpResponse302(httpResponse)) {
                             url = httpResponse.getHeaders().get("location");
                             logger.debug("Redirection to: {}", url);
@@ -485,54 +490,69 @@ public class VWWeConnectSession {
                 }
             }
 
-            if (isRedirectLogin) {
-                url = httpResponse.getHeaders().get("Location");
-                httpResponse = getVWWeConnectAPI(url, Boolean.TRUE);
-                if (!checkHttpResponse302(httpResponse)) {
-                    logger.debug("Redirect login failed! URL: {}", url);
-                    return false;
-                }
-                url = httpResponse.getHeaders().get("Location");
+            if (httpResponse == null) {
+                logger.debug("Login failed, HTTP response: {}", httpResponse);
+                return false;
             } else {
-                // Parse csrf
-                htmlDocument = Jsoup.parse(httpResponse.getContentAsString());
-                nameInput = htmlDocument.select("meta[name=_csrf]").first();
-                if (nameInput == null) {
-                    logger.debug("Login failed, nameInput is null");
-                    return false;
-                }
-                String csrf = nameInput.attr("content");
-                logger.trace("Found csrf {}", csrf);
-
-                // Request login page and get login URL
-                url = SESSION_BASE + GET_LOGIN_URL;
-                httpResponse = postVWWeConnectAPI(url, null, "portal", csrf);
-                if (httpResponse != null && httpResponse.getStatus() == HttpStatus.OK_200) {
-                    String json = httpResponse.getContentAsString();
-                    JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
-                    url = jsonObject.get("loginURL").getAsJsonObject().get("path").getAsString();
-                } else if (httpResponse != null && httpResponse.getStatus() == HttpStatus.MOVED_TEMPORARILY_302) {
-                    url = httpResponse.getHeaders().get("location");
-                    logger.debug("Redirection to: {}", url);
-                    httpResponse = postVWWeConnectAPI(url, null, "portal", csrf);
-                    String json = httpResponse.getContentAsString();
-                    JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
-                    url = jsonObject.get("loginURL").getAsJsonObject().get("path").getAsString();
+                if (isRedirectLogin) {
+                    url = httpResponse.getHeaders().get("Location");
+                    httpResponse = getVWWeConnectAPI(url, Boolean.TRUE);
+                    if (httpResponse != null && !checkHttpResponse302(httpResponse)) {
+                        logger.debug("Redirect login failed! URL: {}", url);
+                        return false;
+                    }
+                    if (httpResponse != null) {
+                        url = httpResponse.getHeaders().get("Location");
+                    } else {
+                        logger.debug("Login failed, HTTP response: {}", httpResponse);
+                        return false;
+                    }
                 } else {
-                    logger.debug("Failed to login, HTTP response: {}", httpResponse);
-                    return false;
+                    // Parse csrf
+                    htmlDocument = Jsoup.parse(httpResponse.getContentAsString());
+                    nameInput = htmlDocument.select("meta[name=_csrf]").first();
+                    if (nameInput == null) {
+                        logger.debug("Login failed, nameInput is null");
+                        return false;
+                    }
+                    String csrf = nameInput.attr("content");
+                    logger.trace("Found csrf {}", csrf);
+
+                    // Request login page and get login URL
+                    url = SESSION_BASE + GET_LOGIN_URL;
+                    httpResponse = postVWWeConnectAPI(url, null, "portal", csrf);
+                    if (httpResponse != null && httpResponse.getStatus() == HttpStatus.OK_200) {
+                        String json = httpResponse.getContentAsString();
+                        JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
+                        url = jsonObject.get("loginURL").getAsJsonObject().get("path").getAsString();
+                    } else if (httpResponse != null && httpResponse.getStatus() == HttpStatus.MOVED_TEMPORARILY_302) {
+                        url = httpResponse.getHeaders().get("location");
+                        logger.debug("Redirection to: {}", url);
+                        httpResponse = postVWWeConnectAPI(url, null, "portal", csrf);
+                        if (httpResponse != null) {
+                            String json = httpResponse.getContentAsString();
+                            JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
+                            url = jsonObject.get("loginURL").getAsJsonObject().get("path").getAsString();
+                        } else {
+                            logger.debug("Login failed, HTTP response: {}", httpResponse);
+                            return false;
+                        }
+                    } else {
+                        logger.debug("Failed to login, HTTP response: {}", httpResponse);
+                        return false;
+                    }
                 }
             }
 
             httpResponse = getVWWeConnectAPI(url, Boolean.TRUE);
-            if (!checkHttpResponse302(httpResponse)) {
+            if (httpResponse == null || !checkHttpResponse302(httpResponse)) {
                 logger.debug("Redirect failed! URL: {}", url);
                 return false;
             }
 
             url = httpResponse.getHeaders().get("Location");
             httpResponse = getVWWeConnectAPI(url, Boolean.TRUE);
-            if (!checkHttpResponse200(httpResponse)) {
+            if (httpResponse == null || !checkHttpResponse200(httpResponse)) {
                 logger.debug("Redirect failed! URL: {}", url);
                 return false;
             }
@@ -554,14 +574,14 @@ public class VWWeConnectSession {
             Fields fields = getFields(userName, password, loginToken, loginHmac, loginCsrf);
 
             httpResponse = postVWWeConnectAPI(url, fields, previousUrl, loginCsrf);
-            if (!checkHttpResponse303(httpResponse)) {
+            if (httpResponse == null || !checkHttpResponse303(httpResponse)) {
                 return false;
             }
 
             url = httpResponse.getHeaders().get("Location");
             url = AUTH_BASE + url;
             httpResponse = getVWWeConnectAPI(url, Boolean.TRUE);
-            if (!checkHttpResponse200(httpResponse)) {
+            if (httpResponse == null || !checkHttpResponse200(httpResponse)) {
                 return false;
             }
 
@@ -584,25 +604,25 @@ public class VWWeConnectSession {
             fields = getFields(userName, password, authToken, authHmac, authCsrf);
 
             httpResponse = postVWWeConnectAPI(url, fields, previousUrl, authCsrf);
-            if (!checkHttpResponse302(httpResponse)) {
+            if (httpResponse == null || !checkHttpResponse302(httpResponse)) {
                 return false;
             }
 
             url = httpResponse.getHeaders().get("Location");
             httpResponse = getVWWeConnectAPI(url, Boolean.TRUE);
-            if (!checkHttpResponse302(httpResponse)) {
+            if (httpResponse == null || !checkHttpResponse302(httpResponse)) {
                 return false;
             }
 
             url = httpResponse.getHeaders().get("Location");
             httpResponse = getVWWeConnectAPI(url, Boolean.TRUE);
-            if (!checkHttpResponse302(httpResponse)) {
+            if (httpResponse == null || !checkHttpResponse302(httpResponse)) {
                 return false;
             }
 
             url = httpResponse.getHeaders().get("Location");
             httpResponse = getVWWeConnectAPI(url, Boolean.TRUE);
-            if (!checkHttpResponse302(httpResponse)) {
+            if (httpResponse == null || !checkHttpResponse302(httpResponse)) {
                 return false;
             }
 
@@ -636,13 +656,13 @@ public class VWWeConnectSession {
                     + "&p_p_id=33_WAR_cored5portlet&p_p_lifecycle=1&p_p_state=normal&p_p_mode=view&p_p_col_id=column-1&p_p_col_count=1&_33_WAR_cored5portlet_javax.portlet.action=getLoginStatus";
 
             httpResponse = postVWWeConnectAPI(url, fields, previousUrl, authCsrf);
-            if (!checkHttpResponse302(httpResponse)) {
+            if (httpResponse == null || !checkHttpResponse302(httpResponse)) {
                 return false;
             }
 
             url = httpResponse.getHeaders().get("Location");
             httpResponse = getVWWeConnectAPI(url, Boolean.TRUE);
-            if (!checkHttpResponse200(httpResponse)) {
+            if (httpResponse == null || !checkHttpResponse200(httpResponse)) {
                 return false;
             }
 
@@ -739,7 +759,6 @@ public class VWWeConnectSession {
         Fields fields = null;
         String content = null;
         String url = null;
-        ContentResponse httpResponse = null;
 
         DocumentContext context = getFullyLoadedCars();
         if (context == null) {
@@ -790,19 +809,18 @@ public class VWWeConnectSession {
             logger.debug("API Response ({})", vehicleHeaterStatus);
 
             EManager eManager = null;
-            String eManagerJSON = "{\"errorCode\":\"0\",\"EManager\":{\"rbc\":{\"status\":{\"batteryPercentage\":100,\"chargingState\":\"OFF\",\"chargingRemaningHour\":\"2\",\"chargingRemaningMinute\":\"28\",\"chargingReason\":\"INVALID\",\"pluginState\":\"DISCONNECTED\",\"lockState\":\"UNLOCKED\",\"extPowerSupplyState\":\"UNAVAILABLE\",\"range\":\"7\",\"electricRange\":216,\"combustionRange\":null,\"combinedRange\":216,\"rlzeUp\":false},\"settings\":{\"chargerMaxCurrent\":16,\"maxAmpere\":32,\"maxCurrentReduced\":false}},\"rpc\":{\"status\":{\"climatisationState\":\"OFF\",\"climatisationRemaningTime\":10,\"windowHeatingStateFront\":\"OFF\",\"windowHeatingStateRear\":\"OFF\",\"climatisationReason\":null,\"windowHeatingAvailable\":true},\"settings\":{\"targetTemperature\":\"26\",\"climatisationWithoutHVPower\":true,\"electric\":true},\"climaterActionState\":\"AVAILABLE\",\"auAvailable\":false},\"rdt\":{\"status\":{\"timers\":[{\"timerId\":1,\"timerProfileId\":1,\"timerStatus\":\"NOT_EXPIRED\",\"timerChargeScheduleStatus\":\"IDLE\",\"timerClimateScheduleStatus\":\"IDLE\",\"timerExpStatusTimestamp\":\"11.04.2020\",\"timerProgrammedStatus\":\"NOT_PROGRAMMED\",\"schedule\":{\"type\":2,\"start\":{\"hours\":12,\"minutes\":0},\"end\":{\"hours\":null,\"minutes\":null},\"index\":null,\"daypicker\":[\"Y\",\"Y\",\"Y\",\"Y\",\"Y\",\"Y\",\"Y\"],\"startDateActive\":\"12.04.2020\",\"endDateActive\":null},\"startDateActive\":\"12.04.2020\",\"timeRangeActive\":\"12:00\"},{\"timerId\":2,\"timerProfileId\":1,\"timerStatus\":\"NOT_EXPIRED\",\"timerChargeScheduleStatus\":\"IDLE\",\"timerClimateScheduleStatus\":\"IDLE\",\"timerExpStatusTimestamp\":\"11.04.2020\",\"timerProgrammedStatus\":\"NOT_PROGRAMMED\",\"schedule\":{\"type\":2,\"start\":{\"hours\":12,\"minutes\":0},\"end\":{\"hours\":null,\"minutes\":null},\"index\":null,\"daypicker\":[\"Y\",\"Y\",\"Y\",\"Y\",\"Y\",\"Y\",\"Y\"],\"startDateActive\":\"12.04.2020\",\"endDateActive\":null},\"startDateActive\":\"12.04.2020\",\"timeRangeActive\":\"12:00\"},{\"timerId\":3,\"timerProfileId\":1,\"timerStatus\":\"NOT_EXPIRED\",\"timerChargeScheduleStatus\":\"IDLE\",\"timerClimateScheduleStatus\":\"IDLE\",\"timerExpStatusTimestamp\":\"11.04.2020\",\"timerProgrammedStatus\":\"NOT_PROGRAMMED\",\"schedule\":{\"type\":2,\"start\":{\"hours\":12,\"minutes\":0},\"end\":{\"hours\":null,\"minutes\":null},\"index\":null,\"daypicker\":[\"Y\",\"Y\",\"Y\",\"Y\",\"Y\",\"Y\",\"Y\"],\"startDateActive\":\"12.04.2020\",\"endDateActive\":null},\"startDateActive\":\"12.04.2020\",\"timeRangeActive\":\"12:00\"}],\"profiles\":[{\"profileId\":1,\"profileName\":\"Standard\",\"timeStamp\":\"11.04.2020\",\"charging\":true,\"climatisation\":false,\"targetChargeLevel\":100,\"nightRateActive\":false,\"nightRateTimeStart\":\"23:00\",\"nightRateTimeEnd\":\"23:00\",\"chargeMaxCurrent\":16,\"heaterSource\":\"ELECTRIC\"}]},\"settings\":{\"minChargeLimit\":100,\"lowerLimitMax\":100},\"auxHeatingAllowed\":false,\"auxHeatingEnabled\":false},\"actionPending\":false,\"rdtAvailable\":true}}";
-            eManager = gson.fromJson(eManagerJSON, EManager.class);
-            // Query API for electric vehicle status if engine type electric
-            if (vehicle.getCompleteVehicleJson().getEngineTypeElectric()) {
-                url = SESSION_BASE + dashboardUrl + EMANAGER_GET_EMANAGER;
-                eManager = postJSONVWWeConnectAPI(url, fields, EManager.class);
-                logger.debug("API Response ({})", eManager);
+            // String eManagerJSON =
+            // "{\"errorCode\":\"0\",\"EManager\":{\"rbc\":{\"status\":{\"batteryPercentage\":100,\"chargingState\":\"OFF\",\"chargingRemaningHour\":\"2\",\"chargingRemaningMinute\":\"28\",\"chargingReason\":\"INVALID\",\"pluginState\":\"DISCONNECTED\",\"lockState\":\"UNLOCKED\",\"extPowerSupplyState\":\"UNAVAILABLE\",\"range\":\"7\",\"electricRange\":216,\"combustionRange\":null,\"combinedRange\":216,\"rlzeUp\":false},\"settings\":{\"chargerMaxCurrent\":16,\"maxAmpere\":32,\"maxCurrentReduced\":false}},\"rpc\":{\"status\":{\"climatisationState\":\"OFF\",\"climatisationRemaningTime\":10,\"windowHeatingStateFront\":\"OFF\",\"windowHeatingStateRear\":\"OFF\",\"climatisationReason\":null,\"windowHeatingAvailable\":true},\"settings\":{\"targetTemperature\":\"26\",\"climatisationWithoutHVPower\":true,\"electric\":true},\"climaterActionState\":\"AVAILABLE\",\"auAvailable\":false},\"rdt\":{\"status\":{\"timers\":[{\"timerId\":1,\"timerProfileId\":1,\"timerStatus\":\"NOT_EXPIRED\",\"timerChargeScheduleStatus\":\"IDLE\",\"timerClimateScheduleStatus\":\"IDLE\",\"timerExpStatusTimestamp\":\"11.04.2020\",\"timerProgrammedStatus\":\"NOT_PROGRAMMED\",\"schedule\":{\"type\":2,\"start\":{\"hours\":12,\"minutes\":0},\"end\":{\"hours\":null,\"minutes\":null},\"index\":null,\"daypicker\":[\"Y\",\"Y\",\"Y\",\"Y\",\"Y\",\"Y\",\"Y\"],\"startDateActive\":\"12.04.2020\",\"endDateActive\":null},\"startDateActive\":\"12.04.2020\",\"timeRangeActive\":\"12:00\"},{\"timerId\":2,\"timerProfileId\":1,\"timerStatus\":\"NOT_EXPIRED\",\"timerChargeScheduleStatus\":\"IDLE\",\"timerClimateScheduleStatus\":\"IDLE\",\"timerExpStatusTimestamp\":\"11.04.2020\",\"timerProgrammedStatus\":\"NOT_PROGRAMMED\",\"schedule\":{\"type\":2,\"start\":{\"hours\":12,\"minutes\":0},\"end\":{\"hours\":null,\"minutes\":null},\"index\":null,\"daypicker\":[\"Y\",\"Y\",\"Y\",\"Y\",\"Y\",\"Y\",\"Y\"],\"startDateActive\":\"12.04.2020\",\"endDateActive\":null},\"startDateActive\":\"12.04.2020\",\"timeRangeActive\":\"12:00\"},{\"timerId\":3,\"timerProfileId\":1,\"timerStatus\":\"NOT_EXPIRED\",\"timerChargeScheduleStatus\":\"IDLE\",\"timerClimateScheduleStatus\":\"IDLE\",\"timerExpStatusTimestamp\":\"11.04.2020\",\"timerProgrammedStatus\":\"NOT_PROGRAMMED\",\"schedule\":{\"type\":2,\"start\":{\"hours\":12,\"minutes\":0},\"end\":{\"hours\":null,\"minutes\":null},\"index\":null,\"daypicker\":[\"Y\",\"Y\",\"Y\",\"Y\",\"Y\",\"Y\",\"Y\"],\"startDateActive\":\"12.04.2020\",\"endDateActive\":null},\"startDateActive\":\"12.04.2020\",\"timeRangeActive\":\"12:00\"}],\"profiles\":[{\"profileId\":1,\"profileName\":\"Standard\",\"timeStamp\":\"11.04.2020\",\"charging\":true,\"climatisation\":false,\"targetChargeLevel\":100,\"nightRateActive\":false,\"nightRateTimeStart\":\"23:00\",\"nightRateTimeEnd\":\"23:00\",\"chargeMaxCurrent\":16,\"heaterSource\":\"ELECTRIC\"}]},\"settings\":{\"minChargeLimit\":100,\"lowerLimitMax\":100},\"auxHeatingAllowed\":false,\"auxHeatingEnabled\":false},\"actionPending\":false,\"rdtAvailable\":true}}";
+            // eManager = gson.fromJson(eManagerJSON, EManager.class);
 
-                url = SESSION_BASE + dashboardUrl + EMANAGER_GET_NOTIFICATIONS;
-                httpResponse = postJSONVWWeConnectAPI(url, fields, referer, xCsrfToken);
-                if (httpResponse != null) {
-                    content = httpResponse.getContentAsString();
-                    logger.debug("Emanager Get Notifications: {}", content);
+            if (vehicle != null) {
+                CompleteVehicleJson vehicleJSON = vehicle.getCompleteVehicleJson();
+                // Query API for electric vehicle status if engine type electric
+                if (vehicleJSON.getEngineTypeElectric() || vehicleJSON.getEngineTypeHybridOCU1()
+                        || vehicleJSON.getEngineTypeHybridOCU2()) {
+                    url = SESSION_BASE + dashboardUrl + EMANAGER_GET_EMANAGER;
+                    eManager = postJSONVWWeConnectAPI(url, fields, EManager.class);
+                    logger.debug("API Response ({})", eManager);
                 }
             }
 
@@ -830,12 +848,12 @@ public class VWWeConnectSession {
                 if (vehicleHeaterStatus != null) {
                     vehicle.setHeaterStatus(vehicleHeaterStatus);
                 } else {
-                    logger.debug("Vehicle   , no heater installed!");
+                    logger.debug("No heater installed!");
                 }
                 if (eManager != null) {
                     vehicle.setEManager(eManager);
                 } else {
-                    logger.debug("No electric vehicle");
+                    logger.debug("No electric/hybrid vehicle");
                 }
 
                 BaseVehicle oldObj = vwWeConnectThings.get(vin);
@@ -849,7 +867,6 @@ public class VWWeConnectSession {
             }
         }
         return true;
-
     }
 
     private synchronized boolean getVehicleStatus() {
@@ -874,6 +891,7 @@ public class VWWeConnectSession {
         // Loop trough all found vehicles
         for (int i = 0; i < vinList.size(); i++) {
             String vin = (String) vinList.get(i);
+            logger.debug("Trying to fetch status for vehicle with VIN {}", vin);
             String dashboardUrl = (String) dashboardUrlList.get(i);
 
             // Request a Vehicle Status report to be sent from vehicle

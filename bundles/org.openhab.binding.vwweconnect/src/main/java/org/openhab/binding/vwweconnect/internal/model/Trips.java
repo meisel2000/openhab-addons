@@ -68,7 +68,6 @@ public class Trips {
         return new EqualsBuilder().append(errorCode, rhs.errorCode).append(rtsViewModel, rhs.rtsViewModel).isEquals();
     }
 
-    @NonNullByDefault
     public class RtsViewModel {
 
         private int daysInMonth;
@@ -155,7 +154,6 @@ public class Trips {
         }
     }
 
-    @NonNullByDefault
     public class LongTermData {
 
         private int tripId;
@@ -268,7 +266,6 @@ public class Trips {
         }
     }
 
-    @NonNullByDefault
     public class AggregatedStatistics {
 
         private int tripId;
@@ -381,7 +378,6 @@ public class Trips {
         }
     }
 
-    @NonNullByDefault
     public class ServiceConfiguration {
 
         private boolean electricConsumption;
@@ -467,7 +463,6 @@ public class Trips {
         }
     }
 
-    @NonNullByDefault
     public class TripStatistic {
 
         private AggregatedStatistics aggregatedStatistics = new AggregatedStatistics();
@@ -506,7 +501,6 @@ public class Trips {
         }
     }
 
-    @NonNullByDefault
     public class TripStatisticDetail {
 
         private int tripId;

@@ -125,7 +125,6 @@ public class Vehicle extends BaseVehicle {
                 .append(vehicleLocation, rhs.vehicleLocation).isEquals();
     }
 
-    @NonNullByDefault
     public class CompleteVehicleJson {
 
         private @Nullable String vin;
@@ -471,7 +470,6 @@ public class Vehicle extends BaseVehicle {
         }
     }
 
-    @NonNullByDefault
     public class PackageService {
 
         private @Nullable String packageServiceId;
@@ -561,12 +559,11 @@ public class Vehicle extends BaseVehicle {
         }
     }
 
-    @NonNullByDefault
     public class VehicleDetails {
 
         private List<String> lastConnectionTimeStamp = new ArrayList<>();
-        private @Nullable String distanceCovered;
-        private @Nullable String range;
+        private double distanceCovered = BaseVehicle.UNDEFINED;
+        private double range = BaseVehicle.UNDEFINED;
         private @Nullable String serviceInspectionData;
         private @Nullable String oilInspectionData;
         private boolean showOil;
@@ -577,11 +574,11 @@ public class Vehicle extends BaseVehicle {
             return lastConnectionTimeStamp;
         }
 
-        public @Nullable String getDistanceCovered() {
+        public double getDistanceCovered() {
             return distanceCovered;
         }
 
-        public @Nullable String getRange() {
+        public double getRange() {
             return range;
         }
 

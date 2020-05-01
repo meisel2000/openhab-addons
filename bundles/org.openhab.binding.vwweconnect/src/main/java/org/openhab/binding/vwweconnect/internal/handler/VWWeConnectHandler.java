@@ -161,7 +161,7 @@ public class VWWeConnectHandler extends BaseThingHandler implements DeviceStatus
         if (vehicle != null) {
             if (vehicle instanceof Vehicle) {
                 Vehicle theVehicle = (Vehicle) vehicle;
-                if (config.vin.equals((theVehicle.getCompleteVehicleJson().getVin()))) {
+                if (config.vin != null && config.vin.equals((theVehicle.getCompleteVehicleJson().getVin()))) {
                     update(theVehicle);
                 }
             } else {

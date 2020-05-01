@@ -72,7 +72,7 @@ public class VWWeConnectBindingConstants {
     public static final String CNG_ALERT = "cngAlert";
     public static final String CNG_RANGE = "cngRange";
 
-    // Electric
+    // Electric/hybrid
     public static final String BATTERY_LEVEL = "batteryLevel";
     public static final String ELECTRIC_CONSUMPTION = "electricConsumption";
     public static final String BATTERY_ALERT = "batteryAlert";
@@ -84,11 +84,20 @@ public class VWWeConnectBindingConstants {
     public static final String PLUGIN_STATE = "pluginState";
     public static final String LOCK_STATE = "lockState";
     public static final String EXTERNAL_POWER_SUPPLY_STATE = "extPowerSupplyState";
+    public static final String CHARGER_MAX_CURRENT = "chargerMaxCurrent";
+    public static final String MAX_AMPERE = "maxAmpere";
+    public static final String MAX_CURRENT_REDUCED = "maxCurrentReduced";
+    public static final String CLIMATISATION_STATE = "climatisationState";
+    public static final String CLIMATISATION_REMAINING_TIME = "climatisationRemainingTime";
+    public static final String CLIMATISATION_REASON = "climatisationReason";
+    public static final String WINDOW_HEATING_STATE_FRONT = "windowHeatingStateFront";
+    public static final String WINDOW_HEATING_STATE_REAR = "windowHeatingStateRear";
 
     // Location
     public static final String ACTUAL_LOCATION = "location";
 
     // Odometer
+    public static final String TOTAL_DISTANCE = "totalDistance";
     public static final String TOTAL_AVERAGE_SPEED = "totalAverageSpeed";
     public static final String TOTAL_TRIP_DISTANCE = "totalTripDistance";
     public static final String TOTAL_TRIP_DURATION = "totalTripDuration";
@@ -118,11 +127,11 @@ public class VWWeConnectBindingConstants {
     public static final String TEMPERATURE = "temperature";
     public static final String HEATING = "HEATING";
     public static final String VENTILATION = "VENTILATION";
-    // Actions Electric
+
+    // Actions Electric/hybrid
     public static final String EMANAGER_CHARGE = "emanagerCharge";
     public static final String EMANAGER_CLIMATE = "emanagerClimate";
     public static final String EMANAGER_WINDOW_HEAT = "emanagerWindowHeat";
-    public static final String LAST_TRIP_ID = "lastTripId";
 
     // Vehicle details
     public static final String NAME = "name";
@@ -134,8 +143,12 @@ public class VWWeConnectBindingConstants {
     public static final String IMAGE_URL = "imageURL";
     public static final String ENGINE_TYPE_COMBUSTIAN = "engineTypeCombustian";
     public static final String ENGINE_TYPE_ELECTRIC = "engineTypeElectic";
+    public static final String ENGINE_TYPE_HYBRID_OCU1 = "engineTypeHybridOCU1";
+    public static final String ENGINE_TYPE_HYBRID_OCU2 = "engineTypeHybridOCU2";
+    public static final String ENGINE_TYPE_CNG = "engineTypeCNG";
     public static final String SERVICE_INSPECTION = "serviceInspectionStatus";
     public static final String OIL_INSPECTION = "oilInspectionStatus";
+    public static final String LAST_TRIP_ID = "lastTripId";
 
     // Status;
     public static final String CHANNEL_STATUS = "status";
@@ -163,11 +176,11 @@ public class VWWeConnectBindingConstants {
     public static final String START_HEATER = "start";
     public static final String STOP_HEATER = "stop";
 
-    // Electric car URLs
+    // Electric/hybrid car URLs
     public static final String EMANAGER_GET_EMANAGER = "/-/emanager/get-emanager";
     public static final String EMANAGER_GET_NOTIFICATIONS = "/-/emanager/get-notifications";
 
-    // Electric car Action URLs
+    // Electric/hybrid car Action URLs
     public static final String CHARGE_BATTERY = "/-/emanager/charge-battery";
     public static final String TRIGGER_CLIMATISATION = "/-/emanager/trigger-climatisation";
     public static final String TRIGGER_WINDOW_HEAT = "/-/emanager/trigger-windowheating";
@@ -191,5 +204,5 @@ public class VWWeConnectBindingConstants {
     public static final int SLEEP_TIME_MILLIS = 1000;
     public static final int MAX_WAIT_MILLIS = 30000;
     public static final int MAX_IMAGE_SIZE = 1000000;
-    public static final int REFRESH_DELAY_SECONDS = 30;
+    public static final int REFRESH_DELAY_SECONDS = 60;
 }

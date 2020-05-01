@@ -66,7 +66,6 @@ public class Status {
                 .isEquals();
     }
 
-    @NonNullByDefault
     public class VehicleStatusData {
 
         private boolean windowStatusSupported;
@@ -230,7 +229,6 @@ public class Status {
         }
     }
 
-    @NonNullByDefault
     public class CarRenderData {
 
         private int parkingLights;
@@ -296,7 +294,6 @@ public class Status {
         }
     }
 
-    @NonNullByDefault
     public class LockData {
 
         @SerializedName("left_front")
@@ -361,7 +358,6 @@ public class Status {
 
     }
 
-    @NonNullByDefault
     public class Doors {
 
         @SerializedName("left_front")
@@ -432,7 +428,6 @@ public class Status {
         }
     }
 
-    @NonNullByDefault
     public class Windows {
 
         @SerializedName("left_front")
