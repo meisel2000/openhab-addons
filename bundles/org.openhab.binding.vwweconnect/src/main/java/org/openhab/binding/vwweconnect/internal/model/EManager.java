@@ -609,8 +609,8 @@ public class EManager {
         public class Status {
             private int batteryPercentage;
             private @Nullable String chargingState;
-            private int chargingRemaningHour = BaseVehicle.UNDEFINED;
-            private int chargingRemaningMinute = BaseVehicle.UNDEFINED;
+            private @Nullable String chargingRemaningHour;
+            private @Nullable String chargingRemaningMinute;
             private @Nullable String chargingReason;
             private @Nullable String pluginState;
             private @Nullable String lockState;
@@ -626,15 +626,21 @@ public class EManager {
             }
 
             public boolean getChargingState() {
-                return chargingState != null && chargingState.equals("ON") ? true : false;
+                return chargingState != null && chargingState.equals("CHARGING") ? true : false;
             }
 
             public int getChargingRemainingHour() {
-                return chargingRemaningHour;
+                if (chargingRemaningHour != null && !chargingRemaningHour.equals("")) {
+                    return Integer.parseInt(chargingRemaningHour);
+                }
+                return BaseVehicle.UNDEFINED;
             }
 
             public int getChargingRemainingMinute() {
-                return chargingRemaningMinute;
+                if (chargingRemaningMinute != null && !chargingRemaningMinute.equals("")) {
+                    return Integer.parseInt(chargingRemaningMinute);
+                }
+                return BaseVehicle.UNDEFINED;
             }
 
             public @Nullable String getChargingReason() {

@@ -101,17 +101,11 @@ public class VehicleHandler extends VWWeConnectHandler {
                     actionUnlock();
                 }
             } else if (EMANAGER_CHARGE.equals(channelID)) {
-                if (onOffCommand == OnOffType.ON) {
-                    actionCharge(onOffCommand == OnOffType.ON);
-                }
+                actionCharge(onOffCommand == OnOffType.ON);
             } else if (EMANAGER_CLIMATE.equals(channelID)) {
-                if (onOffCommand == OnOffType.ON) {
-                    actionCharge(onOffCommand == OnOffType.ON);
-                }
+                actionClimate(onOffCommand == OnOffType.ON);
             } else if (EMANAGER_WINDOW_HEAT.equals(channelID)) {
-                if (onOffCommand == OnOffType.ON) {
-                    actionCharge(onOffCommand == OnOffType.ON);
-                }
+                actionWindowHeat(onOffCommand == OnOffType.ON);
             }
         }
     }
@@ -231,6 +225,7 @@ public class VehicleHandler extends VWWeConnectHandler {
                         ? OnOffType.from(vehicleStatus.getBatteryRange() < 100)
                         : UnDefType.UNDEF;
             case CHARGING_STATE:
+            case EMANAGER_CHARGE:
                 return OnOffType.from(eManager.getEManager().getRbc().getStatus().getChargingState());
             case CHARGING_REMAINING_HOUR:
                 return eManager.getEManager().getRbc().getStatus().getChargingRemainingHour() != BaseVehicle.UNDEFINED
@@ -264,6 +259,7 @@ public class VehicleHandler extends VWWeConnectHandler {
             case MAX_CURRENT_REDUCED:
                 return OnOffType.from(eManager.getEManager().getRbc().getSettings().isMaxCurrentReduced());
             case CLIMATISATION_STATE:
+            case EMANAGER_CLIMATE:
                 return OnOffType.from(eManager.getEManager().getRpc().getStatus().getClimatisationState());
             case CLIMATISATION_REMAINING_TIME:
                 return eManager.getEManager().getRpc().getStatus()
@@ -275,6 +271,7 @@ public class VehicleHandler extends VWWeConnectHandler {
             case CLIMATISATION_REASON:
                 return new StringType(eManager.getEManager().getRpc().getStatus().getClimatisationReason());
             case WINDOW_HEATING_STATE_FRONT:
+            case EMANAGER_WINDOW_HEAT:
                 return OnOffType.from(eManager.getEManager().getRpc().getStatus().getWindowHeatingStateFront());
             case WINDOW_HEATING_STATE_REAR:
                 return OnOffType.from(eManager.getEManager().getRpc().getStatus().getWindowHeatingStateRear());
@@ -468,6 +465,48 @@ public class VehicleHandler extends VWWeConnectHandler {
     private boolean sendCommand(String vin, String url, String requestStatusUrl, String data) {
         VWWeConnectSession session = getSession();
         if (session != null) {
+
+            /*
+             * String content = "{\"errorCode\":\"0\"}";
+             * content =
+             * "{\"errorCode\":\"0\",\"actionNotificationList\":[{\"actionState\":\"FETCHED\",\"actionType\":\"START\",\"serviceType\":\"RBC\",\"errorTitle\":null,\"errorMessage\":null}]}";
+             * logger.debug("Content: {}", content);
+             * if (!session.isErrorCode(content)) {
+             * String requestStatus = null;
+             * ActionNotification notification = null;
+             * if (requestStatusUrl.contains(REQUEST_STATUS)) {
+             * requestStatus = JsonPath.read(content, PARSE_REQUEST_STATUS);
+             * } else if (requestStatusUrl.contains(EMANAGER_GET_NOTIFICATIONS)) {
+             * notification = session.convertFromJSON(content, ActionNotification.class);
+             * }
+             *
+             * if (requestStatus != null && (requestStatus.equals("REQUEST_IN_PROGRESS")
+             * || requestStatus.equals("REQUEST_SUCCESSFUL"))) {
+             * logger.debug("Command has status {} ", requestStatus);
+             * } else if (notification != null) {
+             * List<ActionNotificationList> list = notification.getActionNotificationList().stream()
+             * .filter(a -> a.getActionState() != null && (a.getActionState().equals("QUEUED")
+             * || a.getActionState().equals("FETCHED") || a.getActionState().equals("SUCCEEDED")))
+             * .collect(Collectors.toList());
+             * if (list.size() > 0) {
+             * logger.warn("Command has status: {} notification: {}", list.get(0).getActionState(),
+             * notification);
+             * } else {
+             * logger.debug("No command status yet: {}", notification);
+             * }
+             * } else {
+             * logger.warn("Failed to request status for vehicle {}! Request status: {}", vin,
+             * requestStatus != null ? requestStatus : notification);
+             * return false;
+             * }
+             * } else {
+             * logger.warn("Failed to request status for vehicle {}! HTTP response: {} Response: {}", vin,
+             * HttpStatus.BAD_REQUEST_400, content);
+             * return false;
+             * }
+             * }
+             */
+
             ContentResponse httpResponse = session.sendCommand(url, data);
             if (httpResponse != null && httpResponse.getStatus() == HttpStatus.OK_200) {
                 logger.debug(" VIN: {} JSON response: {}", vin, httpResponse.getContentAsString());
@@ -485,7 +524,7 @@ public class VehicleHandler extends VWWeConnectHandler {
             }
 
             try {
-                Thread.sleep(10 * SLEEP_TIME_MILLIS);
+                Thread.sleep(30 * SLEEP_TIME_MILLIS);
             } catch (InterruptedException e) {
                 logger.warn("InterruptedException caught: {}", e.getMessage(), e);
             }
@@ -498,12 +537,11 @@ public class VehicleHandler extends VWWeConnectHandler {
                 if (!session.isErrorCode(content)) {
                     String requestStatus = null;
                     ActionNotification notification = null;
-                    if (requestStatusUrl.equals(REQUEST_STATUS)) {
+                    if (requestStatusUrl.contains(REQUEST_STATUS)) {
                         requestStatus = JsonPath.read(content, PARSE_REQUEST_STATUS);
-                    } else if (requestStatusUrl.equals(EMANAGER_GET_NOTIFICATIONS)) {
+                    } else if (requestStatusUrl.contains(EMANAGER_GET_NOTIFICATIONS)) {
                         notification = session.convertFromJSON(content, ActionNotification.class);
                     }
-
                     if (requestStatus != null && (requestStatus.equals("REQUEST_IN_PROGRESS")
                             || requestStatus.equals("REQUEST_SUCCESSFUL"))) {
                         logger.debug("Command has status {} ", requestStatus);
@@ -514,10 +552,9 @@ public class VehicleHandler extends VWWeConnectHandler {
                                                 || a.getActionState().equals("SUCCEEDED")))
                                 .collect(Collectors.toList());
                         if (list.size() > 0) {
-                            logger.debug("Command has status {} ", list.get(0).getActionState());
+                            logger.debug("Command has status: {} ", list.get(0).getActionState());
                         } else {
-                            logger.warn("Request status for vehicle {} : {}", vin, notification);
-                            return false;
+                            logger.debug("No command status yet: {}", notification);
                         }
                     } else {
                         logger.warn("Failed to request status for vehicle {}! Request status: {}", vin,

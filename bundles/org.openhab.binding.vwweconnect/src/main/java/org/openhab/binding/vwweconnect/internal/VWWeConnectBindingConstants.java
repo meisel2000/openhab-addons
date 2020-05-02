@@ -150,7 +150,7 @@ public class VWWeConnectBindingConstants {
     public static final String OIL_INSPECTION = "oilInspectionStatus";
     public static final String LAST_TRIP_ID = "lastTripId";
 
-    // Status;
+    // Status
     public static final String CHANNEL_STATUS = "status";
 
     // Common API URLs
