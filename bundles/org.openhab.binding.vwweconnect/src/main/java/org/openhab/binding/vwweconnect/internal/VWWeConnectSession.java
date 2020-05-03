@@ -807,8 +807,8 @@ public class VWWeConnectSession {
             EManager eManager = null;
             HeaterStatus vehicleHeaterStatus = null;
 
+            String eManagerJSON;
             /*
-             * String eManagerJSON;
              * logger.warn("Count: {}", count);
              * if (count == 0) {
              * eManagerJSON =
@@ -935,7 +935,7 @@ public class VWWeConnectSession {
                 try {
                     status = gson.fromJson(content, Status.class);
                     requestStatus = status.getVehicleStatusData().getRequestStatus();
-                    // Check for progess of Vehicle report
+                    // Check for progress of Vehicle report
                     long start = System.currentTimeMillis();
                     while (requestStatus != null && requestStatus.equals(REQUEST_IN_PROGRESS)) {
                         try {

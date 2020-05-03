@@ -745,6 +745,10 @@ public class EManager {
                 return windowHeatingStateRear != null && windowHeatingStateRear.equals("ON") ? true : false;
             }
 
+            public boolean getWindowHeatingState() {
+                return getWindowHeatingStateFront() || getWindowHeatingStateRear();
+            }
+
             public @Nullable String getClimatisationReason() {
                 return climatisationReason;
             }

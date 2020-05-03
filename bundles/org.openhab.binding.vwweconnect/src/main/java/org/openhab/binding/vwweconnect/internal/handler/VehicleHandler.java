@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.measure.quantity.Length;
@@ -78,6 +79,7 @@ import com.jayway.jsonpath.JsonPath;
  */
 @NonNullByDefault
 public class VehicleHandler extends VWWeConnectHandler {
+    private static int count = 0;
 
     public VehicleHandler(Thing thing) {
         super(thing);
@@ -271,10 +273,11 @@ public class VehicleHandler extends VWWeConnectHandler {
             case CLIMATISATION_REASON:
                 return new StringType(eManager.getEManager().getRpc().getStatus().getClimatisationReason());
             case WINDOW_HEATING_STATE_FRONT:
-            case EMANAGER_WINDOW_HEAT:
                 return OnOffType.from(eManager.getEManager().getRpc().getStatus().getWindowHeatingStateFront());
             case WINDOW_HEATING_STATE_REAR:
                 return OnOffType.from(eManager.getEManager().getRpc().getStatus().getWindowHeatingStateRear());
+            case EMANAGER_WINDOW_HEAT:
+                return OnOffType.from(eManager.getEManager().getRpc().getStatus().getWindowHeatingState());
             case TOTAL_DISTANCE:
                 return vehicleDetails.getDistanceCovered() != BaseVehicle.UNDEFINED
                         ? new QuantityType<Length>(vehicleDetails.getDistanceCovered() * 1000, KILO(SIUnits.METRE))
@@ -352,7 +355,7 @@ public class VehicleHandler extends VWWeConnectHandler {
         return UnDefType.UNDEF;
     }
 
-    private boolean filterLastTrip(TripStatistic tripStat, int tripId) {
+    private boolean filterLastTrip(@Nullable TripStatistic tripStat, int tripId) {
         if (tripStat != null) {
             return (tripStat.getAggregatedStatistics().getTripId() == tripId);
         }
@@ -462,14 +465,32 @@ public class VehicleHandler extends VWWeConnectHandler {
         }
     }
 
-    private boolean sendCommand(String vin, String url, String requestStatusUrl, String data) {
-        VWWeConnectSession session = getSession();
-        if (session != null) {
+    public class ActionResultController implements Runnable {
+        private String vin;
+        private String requestStatusUrl;
+        private VWWeConnectSession session;
+
+        public ActionResultController(String vin, String requestStatusUrl, VWWeConnectSession session) {
+            this.vin = vin;
+            this.requestStatusUrl = requestStatusUrl;
+            this.session = session;
+
+        }
+
+        @Override
+        public void run() {
 
             /*
              * String content = "{\"errorCode\":\"0\"}";
+             * if (count == 0) {
              * content =
              * "{\"errorCode\":\"0\",\"actionNotificationList\":[{\"actionState\":\"FETCHED\",\"actionType\":\"START\",\"serviceType\":\"RBC\",\"errorTitle\":null,\"errorMessage\":null}]}";
+             * count++;
+             * } else {
+             * content =
+             * "{\"errorCode\":\"0\",\"actionNotificationList\":[{\"actionState\":\"SUCCEEDED\",\"actionType\":\"START\",\"serviceType\":\"RBC\",\"errorTitle\":null,\"errorMessage\":null}]}";
+             * count++;
+             * }
              * logger.debug("Content: {}", content);
              * if (!session.isErrorCode(content)) {
              * String requestStatus = null;
@@ -480,57 +501,36 @@ public class VehicleHandler extends VWWeConnectHandler {
              * notification = session.convertFromJSON(content, ActionNotification.class);
              * }
              *
-             * if (requestStatus != null && (requestStatus.equals("REQUEST_IN_PROGRESS")
-             * || requestStatus.equals("REQUEST_SUCCESSFUL"))) {
+             * if (requestStatus != null && requestStatus.equals("REQUEST_SUCCESSFUL")) {
              * logger.debug("Command has status {} ", requestStatus);
+             * scheduleImmediateRefresh(0);
              * } else if (notification != null) {
              * List<ActionNotificationList> list = notification.getActionNotificationList().stream()
-             * .filter(a -> a.getActionState() != null && (a.getActionState().equals("QUEUED")
-             * || a.getActionState().equals("FETCHED") || a.getActionState().equals("SUCCEEDED")))
+             * .filter(a -> a.getActionState() != null && a.getActionState().equals("SUCCEEDED"))
              * .collect(Collectors.toList());
              * if (list.size() > 0) {
-             * logger.warn("Command has status: {} notification: {}", list.get(0).getActionState(),
+             * logger.debug("Command has status: {} notification: {}", list.get(0).getActionState(),
              * notification);
+             * scheduleImmediateRefresh(0);
              * } else {
              * logger.debug("No command status yet: {}", notification);
+             * scheduler.schedule(new ActionResultController(vin, requestStatusUrl, session), 15000,
+             * TimeUnit.MILLISECONDS);
              * }
              * } else {
              * logger.warn("Failed to request status for vehicle {}! Request status: {}", vin,
              * requestStatus != null ? requestStatus : notification);
-             * return false;
+             *
              * }
              * } else {
              * logger.warn("Failed to request status for vehicle {}! HTTP response: {} Response: {}", vin,
              * HttpStatus.BAD_REQUEST_400, content);
-             * return false;
              * }
              * }
              */
 
-            ContentResponse httpResponse = session.sendCommand(url, data);
-            if (httpResponse != null && httpResponse.getStatus() == HttpStatus.OK_200) {
-                logger.debug(" VIN: {} JSON response: {}", vin, httpResponse.getContentAsString());
-                if (!session.isErrorCode(httpResponse.getContentAsString())) {
-                    logger.debug("Command {} successfully sent to vehicle!", url);
-                } else {
-                    logger.warn("Failed to send {} to the vehicle {} JSON response: {}", url, vin,
-                            httpResponse.getContentAsString());
-                    return false;
-                }
-            } else {
-                logger.warn("Failed to send {} to the vehicle {} HTTP response: {}", url, vin,
-                        httpResponse != null ? httpResponse.getStatus() : -1);
-                return false;
-            }
-
-            try {
-                Thread.sleep(30 * SLEEP_TIME_MILLIS);
-            } catch (InterruptedException e) {
-                logger.warn("InterruptedException caught: {}", e.getMessage(), e);
-            }
-
             Fields fields = null;
-            httpResponse = session.sendCommand(requestStatusUrl, fields);
+            ContentResponse httpResponse = session.sendCommand(requestStatusUrl, fields);
             if (httpResponse != null) {
                 String content = httpResponse.getContentAsString();
                 logger.debug("Content: {}", content);
@@ -539,35 +539,154 @@ public class VehicleHandler extends VWWeConnectHandler {
                     ActionNotification notification = null;
                     if (requestStatusUrl.contains(REQUEST_STATUS)) {
                         requestStatus = JsonPath.read(content, PARSE_REQUEST_STATUS);
+                        if (requestStatus != null) {
+                            if (requestStatus.equals("REQUEST_SUCCESSFUL")) {
+                                logger.debug("Command has status {} ", requestStatus);
+                                scheduleImmediateRefresh(0);
+                            } else {
+                                logger.debug("Command has status {} ", requestStatus);
+                                scheduler.schedule(new ActionResultController(vin, requestStatusUrl, session), 15000,
+                                        TimeUnit.MILLISECONDS);
+                            }
+                        } else {
+                            logger.warn("Failed to request status for vehicle {}! Request status is null", vin);
+                        }
                     } else if (requestStatusUrl.contains(EMANAGER_GET_NOTIFICATIONS)) {
                         notification = session.convertFromJSON(content, ActionNotification.class);
-                    }
-                    if (requestStatus != null && (requestStatus.equals("REQUEST_IN_PROGRESS")
-                            || requestStatus.equals("REQUEST_SUCCESSFUL"))) {
-                        logger.debug("Command has status {} ", requestStatus);
-                    } else if (notification != null) {
-                        List<ActionNotificationList> list = notification.getActionNotificationList().stream()
-                                .filter(a -> a.getActionState() != null
-                                        && (a.getActionState().equals("QUEUED") || a.getActionState().equals("FETCHED")
-                                                || a.getActionState().equals("SUCCEEDED")))
-                                .collect(Collectors.toList());
-                        if (list.size() > 0) {
-                            logger.debug("Command has status: {} ", list.get(0).getActionState());
+                        if (notification != null) {
+                            List<ActionNotificationList> list = notification.getActionNotificationList().stream()
+                                    .filter(a -> a.getActionState() != null && (a.getActionState().equals("SUCCEEDED")))
+                                    .collect(Collectors.toList());
+                            if (list.size() > 0) {
+                                logger.debug("Command has status: {} ", list.get(0).getActionState());
+                                scheduleImmediateRefresh(0);
+                            } else {
+                                logger.debug("No command status yet: {}", notification);
+                                scheduler.schedule(new ActionResultController(vin, requestStatusUrl, session), 15000,
+                                        TimeUnit.MILLISECONDS);
+                            }
                         } else {
-                            logger.debug("No command status yet: {}", notification);
+                            logger.warn("Failed to request status for vehicle {}! Notification status is null", vin);
                         }
-                    } else {
-                        logger.warn("Failed to request status for vehicle {}! Request status: {}", vin,
-                                requestStatus != null ? requestStatus : notification);
-                        return false;
                     }
                 } else {
                     logger.warn("Failed to request status for vehicle {}! HTTP response: {} Response: {}", vin,
                             httpResponse.getStatus(), content);
-                    return false;
                 }
             }
         }
+    }
+
+    private boolean sendCommand(String vin, String url, String requestStatusUrl, String data,
+            VWWeConnectBridgeHandler bridgeHandler, VWWeConnectSession session) {
+
+        /*
+         * String content = "{\"errorCode\":\"0\"}";
+         * content =
+         * "{\"errorCode\":\"0\",\"actionNotificationList\":[{\"actionState\":\"FETCHED\",\"actionType\":\"START\",\"serviceType\":\"RBC\",\"errorTitle\":null,\"errorMessage\":null}]}";
+         * logger.debug("Content: {}", content);
+         * if (!session.isErrorCode(content)) {
+         * String requestStatus = null;
+         * ActionNotification notification = null;
+         * if (requestStatusUrl.contains(REQUEST_STATUS)) {
+         * requestStatus = JsonPath.read(content, PARSE_REQUEST_STATUS);
+         * } else if (requestStatusUrl.contains(EMANAGER_GET_NOTIFICATIONS)) {
+         * notification = session.convertFromJSON(content, ActionNotification.class);
+         * }
+         *
+         * if (requestStatus != null && (requestStatus.equals("REQUEST_IN_PROGRESS")
+         * || requestStatus.equals("REQUEST_SUCCESSFUL"))) {
+         * logger.debug("Command has status {} ", requestStatus);
+         * } else if (notification != null) {
+         * List<ActionNotificationList> list = notification.getActionNotificationList().stream()
+         * .filter(a -> a.getActionState() != null && (a.getActionState().equals("QUEUED")
+         * || a.getActionState().equals("FETCHED") || a.getActionState().equals("SUCCEEDED")))
+         * .collect(Collectors.toList());
+         * if (list.size() > 0) {
+         * logger.warn("Command has status: {} notification: {}", list.get(0).getActionState(),
+         * notification);
+         * } else {
+         * logger.debug("No command status yet: {}", notification);
+         * }
+         * } else {
+         * logger.warn("Failed to request status for vehicle {}! Request status: {}", vin,
+         * requestStatus != null ? requestStatus : notification);
+         * return false;
+         * }
+         * } else {
+         * logger.warn("Failed to request status for vehicle {}! HTTP response: {} Response: {}", vin,
+         * HttpStatus.BAD_REQUEST_400, content);
+         * return false;
+         * }
+         * }
+         */
+
+        ContentResponse httpResponse = session.sendCommand(url, data);
+        if (httpResponse != null && httpResponse.getStatus() == HttpStatus.OK_200) {
+            logger.debug(" VIN: {} JSON response: {}", vin, httpResponse.getContentAsString());
+            if (!session.isErrorCode(httpResponse.getContentAsString())) {
+                logger.debug("Command {} successfully sent to vehicle!", url);
+            } else {
+                logger.warn("Failed to send {} to the vehicle {} JSON response: {}", url, vin,
+                        httpResponse.getContentAsString());
+                return false;
+            }
+        } else {
+            logger.warn("Failed to send {} to the vehicle {} HTTP response: {}", url, vin,
+                    httpResponse != null ? httpResponse.getStatus() : -1);
+            return false;
+        }
+
+        bridgeHandler.addPendingAction(scheduler.schedule(new ActionResultController(vin, requestStatusUrl, session),
+                15000, TimeUnit.MILLISECONDS));
+
+        bridgeHandler.removeFinishedJobs();
+
+        /*
+         * try {
+         * Thread.sleep(30 * SLEEP_TIME_MILLIS);
+         * } catch (InterruptedException e) {
+         * logger.warn("InterruptedException caught: {}", e.getMessage(), e);
+         * }
+         *
+         * Fields fields = null;
+         * httpResponse = session.sendCommand(requestStatusUrl, fields);
+         * if (httpResponse != null) {
+         * String content = httpResponse.getContentAsString();
+         * logger.debug("Content: {}", content);
+         * if (!session.isErrorCode(content)) {
+         * String requestStatus = null;
+         * ActionNotification notification = null;
+         * if (requestStatusUrl.contains(REQUEST_STATUS)) {
+         * requestStatus = JsonPath.read(content, PARSE_REQUEST_STATUS);
+         * } else if (requestStatusUrl.contains(EMANAGER_GET_NOTIFICATIONS)) {
+         * notification = session.convertFromJSON(content, ActionNotification.class);
+         * }
+         * if (requestStatus != null && (requestStatus.equals("REQUEST_IN_PROGRESS")
+         * || requestStatus.equals("REQUEST_SUCCESSFUL"))) {
+         * logger.debug("Command has status {} ", requestStatus);
+         * } else if (notification != null) {
+         * List<ActionNotificationList> list = notification.getActionNotificationList().stream()
+         * .filter(a -> a.getActionState() != null && (a.getActionState().equals("QUEUED")
+         * || a.getActionState().equals("FETCHED") || a.getActionState().equals("SUCCEEDED")))
+         * .collect(Collectors.toList());
+         * if (list.size() > 0) {
+         * logger.debug("Command has status: {} ", list.get(0).getActionState());
+         * } else {
+         * logger.debug("No command status yet: {}", notification);
+         * }
+         * } else {
+         * logger.warn("Failed to request status for vehicle {}! Request status: {}", vin,
+         * requestStatus != null ? requestStatus : notification);
+         * return false;
+         * }
+         * } else {
+         * logger.warn("Failed to request status for vehicle {}! HTTP response: {} Response: {}", vin,
+         * httpResponse.getStatus(), content);
+         * return false;
+         * }
+         * }
+         */
         return true;
     }
 
@@ -589,8 +708,8 @@ public class VehicleHandler extends VWWeConnectHandler {
                             + action;
                     String requestStatusUrl = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl()
                             + REQUEST_STATUS;
-                    if (sendCommand(vin, url, requestStatusUrl, data)) {
-                        scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
+                    if (sendCommand(vin, url, requestStatusUrl, data, bridgeHandler, session)) {
+                        // scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
                     } else {
                         logger.warn("The vehicle {} failed to handle action {}", vin, action);
                     }
@@ -643,8 +762,8 @@ public class VehicleHandler extends VWWeConnectHandler {
                             + command;
                     String requestStatusUrl = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl()
                             + REQUEST_STATUS;
-                    if (sendCommand(vin, url, requestStatusUrl, data)) {
-                        scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
+                    if (sendCommand(vin, url, requestStatusUrl, data, bridgeHandler, session)) {
+                        // scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
                     } else {
                         logger.warn("The vehicle {} failed to handle action {} {}", config.vin, action, start);
                     }
@@ -682,8 +801,8 @@ public class VehicleHandler extends VWWeConnectHandler {
                     String url = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl() + CHARGE_BATTERY;
                     String requestStatusUrl = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl()
                             + EMANAGER_GET_NOTIFICATIONS;
-                    if (sendCommand(vin, url, requestStatusUrl, data)) {
-                        scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
+                    if (sendCommand(vin, url, requestStatusUrl, data, bridgeHandler, session)) {
+                        // scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
                     } else {
                         logger.warn("The vehicle {} failed to handle command {} {}", config.vin, url, start);
                     }
@@ -715,8 +834,8 @@ public class VehicleHandler extends VWWeConnectHandler {
                     String requestStatusUrl = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl()
                             + EMANAGER_GET_NOTIFICATIONS;
                     ;
-                    if (sendCommand(vin, url, requestStatusUrl, data)) {
-                        scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
+                    if (sendCommand(vin, url, requestStatusUrl, data, bridgeHandler, session)) {
+                        // scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
                     } else {
                         logger.warn("The vehicle {} failed to handle command {} {}", config.vin, url, start);
                     }
@@ -748,8 +867,8 @@ public class VehicleHandler extends VWWeConnectHandler {
                     String requestStatusUrl = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl()
                             + EMANAGER_GET_NOTIFICATIONS;
                     ;
-                    if (sendCommand(vin, url, requestStatusUrl, data)) {
-                        scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
+                    if (sendCommand(vin, url, requestStatusUrl, data, bridgeHandler, session)) {
+                        // scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
                     } else {
                         logger.warn("The vehicle {} failed to handle command {} {}", config.vin, url, start);
                     }
