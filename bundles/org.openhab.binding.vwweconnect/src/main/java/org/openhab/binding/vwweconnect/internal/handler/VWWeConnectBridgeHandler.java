@@ -134,12 +134,13 @@ public class VWWeConnectBridgeHandler extends BaseBridgeHandler {
             updateStatus(ThingStatus.UNKNOWN);
 
             scheduler.execute(() -> {
-                VWWeConnectSession localSession = session;
-                if (localSession == null) {
+                if (session == null) {
                     logger.debug("Session is null, config change probably, then let's create a new one");
-                    localSession = new VWWeConnectSession(this.httpClient);
+                    session = new VWWeConnectSession(this.httpClient);
                 }
-                localSession.initialize(config.username, config.password, securePIN);
+                if (session != null) {
+                    session.initialize(config.username, config.password, securePIN);
+                }
             });
 
             startAutomaticRefresh();

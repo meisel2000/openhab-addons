@@ -730,7 +730,7 @@ public class EManager {
             private boolean windowHeatingAvailable;
 
             public boolean getClimatisationState() {
-                return climatisationState != null && climatisationState.equals("ON") ? true : false;
+                return climatisationState != null && climatisationState.equals("OFF") ? false : true;
             }
 
             public int getClimatisationRemaningTime() {
