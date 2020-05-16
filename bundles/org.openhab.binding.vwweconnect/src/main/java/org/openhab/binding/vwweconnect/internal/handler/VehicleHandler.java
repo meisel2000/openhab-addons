@@ -35,7 +35,6 @@ import org.eclipse.smarthome.core.library.types.DateTimeType;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.QuantityType;
-import org.eclipse.smarthome.core.library.types.RawType;
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.library.unit.SIUnits;
 import org.eclipse.smarthome.core.library.unit.SmartHomeUnits;
@@ -164,8 +163,8 @@ public class VehicleHandler extends VWWeConnectHandler {
             case DASHBOARD_URL:
                 return new StringType(vehicle.getDashboardUrl());
             case IMAGE_URL:
-                RawType image = HttpUtil.downloadImage(vehicle.getImageUrl());
-                return image != null ? image : UnDefType.UNDEF;
+                String imageUrl = vehicle.getImageUrl();
+                return imageUrl != null ? HttpUtil.downloadImage(imageUrl) : UnDefType.UNDEF;
             case ENGINE_TYPE_COMBUSTIAN:
                 return OnOffType.from(vehicle.getEngineTypeCombustian());
             case ENGINE_TYPE_ELECTRIC:
