@@ -164,7 +164,8 @@ public class VWWeConnectBindingConstants {
     public static final String VEHICLE_STATUS = "/-/vsr/get-vsr";
     public static final String TRIP_STATISTICS = "/-/rts/get-latest-trip-statistics";
     public static final String VEHICLE_LOCATION = "/-/cf/get-location";
-    public static final String REQUEST_STATUS = "/-/vsr/get-request-status";
+    public static final String REQUEST_STATUS_LOCK_ACTION = "/-/vsr/get-request-status";
+    public static final String REQUEST_STATUS_HEATER_ACTION = "/-/rah/get-request-status";
     public static final String GET_HEATER_STATUS = "/-/rah/get-status";
 
     // Action URLs

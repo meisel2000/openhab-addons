@@ -536,7 +536,7 @@ public class VehicleHandler extends VWWeConnectHandler {
                 if (!session.isErrorCode(content)) {
                     String requestStatus = null;
                     ActionNotification notification = null;
-                    if (requestStatusUrl.contains(REQUEST_STATUS)) {
+                    if (requestStatusUrl.contains(REQUEST_STATUS_LOCK_ACTION)) {
                         requestStatus = JsonPath.read(content, PARSE_REQUEST_STATUS);
                         if (requestStatus != null) {
                             if (requestStatus.equals("REQUEST_SUCCESSFUL")) {
@@ -706,7 +706,7 @@ public class VehicleHandler extends VWWeConnectHandler {
                     String url = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl() + LOCKUNLOCK
                             + action;
                     String requestStatusUrl = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl()
-                            + REQUEST_STATUS;
+                            + REQUEST_STATUS_LOCK_ACTION;
                     if (sendCommand(vin, url, requestStatusUrl, data, bridgeHandler, session)) {
                         // scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
                     } else {
@@ -760,7 +760,7 @@ public class VehicleHandler extends VWWeConnectHandler {
                     String url = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl() + STARTSTOP_HEATER
                             + command;
                     String requestStatusUrl = SESSION_BASE + vehicle.getCompleteVehicleJson().getDashboardUrl()
-                            + REQUEST_STATUS;
+                            + REQUEST_STATUS_HEATER_ACTION;
                     if (sendCommand(vin, url, requestStatusUrl, data, bridgeHandler, session)) {
                         // scheduleImmediateRefresh(REFRESH_DELAY_SECONDS);
                     } else {
