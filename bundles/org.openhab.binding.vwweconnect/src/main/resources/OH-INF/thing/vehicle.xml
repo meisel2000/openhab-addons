@@ -318,8 +318,8 @@
 	<channel-type id="electricConsumption" advanced="true">
 		<item-type>Number</item-type>
 		<label>Average Electric Consumption</label>
-		<description>Indicates the average Electric consumption in A/100km</description>
-		<state pattern="%.1f A/100km" readOnly="true"></state>
+		<description>Indicates the average Electric consumption in kWh/100km</description>
+		<state pattern="%.1f kWh/100km" readOnly="true"></state>
 	</channel-type>
 
 	<channel-type id="chargingState" advanced="true">
